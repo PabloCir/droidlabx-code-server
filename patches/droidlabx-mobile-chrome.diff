@@ -3284,10 +3284,18 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/activityb
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
 +++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
-@@ -605,6 +605,11 @@ export class ActivityBarCompositeBar ext
- 				width -= exit.clientWidth;
+@@ -597,6 +597,19 @@ export class ActivityBarCompositeBar ext
+ 				width -= this.globalCompositeBar.element.clientWidth;
  			}
  		}
++		const exit = this.element?.querySelector('.dlx-exit');
++		if (exit instanceof HTMLElement) {
++			if (this.options.orientation === ActionsOrientation.VERTICAL) {
++				height -= exit.clientHeight;
++			} else {
++				width -= exit.clientWidth;
++			}
++		}
 +		if (this.layoutService.mainContainer.classList.contains('dlx-compact')
 +			&& this.layoutService.mainContainer.classList.contains('dlx-drawer-open')
 +			&& this.options.orientation === ActionsOrientation.VERTICAL) {
@@ -3308,16 +3316,144 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/mo
  const MODAL_SIDEBAR_MIN_WIDTH = 160;
  const MODAL_SIDEBAR_DEFAULT_WIDTH = 260;
  const MODAL_SIDEBAR_PADDING = 8; // matches CSS padding on sidebar container
+@@ -662,18 +662,32 @@
+ 		}));
+ 
+ 		// Compute default (non-custom, non-maximized) modal size
++		const isCompact = () => this.layoutService.mainContainer.classList.contains('dlx-compact');
+ 		const getDefaultSize = (): Dimension => {
+ 			const containerDimension = this.layoutService.mainContainerDimension;
+ 			const titleBarOffset = this.layoutService.mainContainerOffset.top;
+ 			const availableHeight = Math.max(containerDimension.height - titleBarOffset, 0);
+-			const targetWidth = containerDimension.width * 0.8;
+-			const targetHeight = availableHeight * 0.8;
+-			const width = Math.min(targetWidth, MODAL_MAX_DEFAULT_WIDTH, containerDimension.width);
+-			const height = Math.min(targetHeight, MODAL_MAX_DEFAULT_HEIGHT, availableHeight);
++			if (isCompact()) {
++				return new Dimension(containerDimension.width, containerDimension.height);
++			}
++			const inset = 12;
++			const width = Math.min(containerDimension.width - inset * 2, MODAL_MAX_DEFAULT_WIDTH, containerDimension.width);
++			const height = Math.min(availableHeight - inset * 2, MODAL_MAX_DEFAULT_HEIGHT, availableHeight);
+ 
+-			return new Dimension(width, height);
++			return new Dimension(Math.max(width, 0), Math.max(height, 0));
+ 		};
+ 
++		const closeButton = append(actionBarContainer, $('button.dlx-overlay-close')) as HTMLButtonElement;
++		closeButton.type = 'button';
++		closeButton.setAttribute('aria-label', localize('closeModalEditor', "Close"));
++		const closeIcon = append(closeButton, $('span'));
++		closeIcon.className = ThemeIcon.asClassName(Codicon.close);
++		closeIcon.setAttribute('aria-hidden', 'true');
++		disposables.add(addDisposableListener(closeButton, EventType.CLICK, e => {
++			EventHelper.stop(e, true);
++			void editorPart.close();
++		}));
++
+ 		// Layout the modal editor part
+ 		let isFirstLayout = true;
+ 		const layoutModal = () => {
+@@ -684,15 +698,20 @@
+ 			const containerDimension = this.layoutService.mainContainerDimension;
+ 			const titleBarOffset = this.layoutService.mainContainerOffset.top;
+ 			const availableHeight = Math.max(containerDimension.height - titleBarOffset, 0);
++			const compact = isCompact();
++			modalElement.classList.toggle('dlx-sheet', compact);
+ 
+ 			const defaultSize = getDefaultSize();
+ 
+ 			let width: number;
+ 			let height: number;
+ 
+-			if (editorPart.maximized) {
+-				const verticalPadding = Math.max(titleBarOffset /* keep away from title bar to prevent clipping issues with WCO */, MODAL_MAXIMIZED_PADDING);
+-				width = Math.max(containerDimension.width - MODAL_MAXIMIZED_PADDING, 0);
++			if (compact) {
++				width = containerDimension.width;
++				height = containerDimension.height;
++			} else if (editorPart.maximized) {
++				const verticalPadding = Math.max(titleBarOffset /* keep away from title bar to prevent clipping issues with WCO */, 8);
++				width = Math.max(containerDimension.width - 16, 0);
+ 				height = Math.max(availableHeight - verticalPadding, 0);
+ 			} else if (editorPart.size) {
+ 				width = Math.min(editorPart.size.width, containerDimension.width);
+@@ -702,7 +721,9 @@
+ 				height = defaultSize.height;
+ 			}
+ 
+-			height = Math.min(height, availableHeight); // Ensure the modal never exceeds available height (below the title bar)
++			if (!compact) {
++				height = Math.min(height, availableHeight); // Ensure the modal never exceeds available height (below the title bar)
++			}
+ 
+ 			// On first layout, clamp sidebar width if it would leave the editor too narrow
+ 			if (isFirstLayout) {
+@@ -711,16 +732,19 @@
+ 			}
+ 
+ 			// Update resizable element size and constraints
+-			resizableElement.maxSize = new Dimension(containerDimension.width, availableHeight);
++			resizableElement.maxSize = new Dimension(containerDimension.width, compact ? containerDimension.height : availableHeight);
+ 			resizableElement.preferredSize = defaultSize;
+ 			resizableElement.layout(height, width);
+ 
+ 			// Enable/disable sashes based on maximized state
+-			const canResize = !editorPart.maximized;
++			const canResize = !editorPart.maximized && !compact;
+ 			resizableElement.enableSashes(canResize, canResize, canResize, canResize);
+ 
+ 			// Position: use custom position if available (clamped to bounds), otherwise center
+-			if (!editorPart.maximized && editorPart.position) {
++			if (compact) {
++				resizableElement.domNode.style.left = '0px';
++				resizableElement.domNode.style.top = '0px';
++			} else if (!editorPart.maximized && editorPart.position) {
+ 				const clampedLeft = Math.max(0, Math.min(editorPart.position.left, containerDimension.width - width));
+ 				const clampedTop = Math.max(titleBarOffset, Math.min(editorPart.position.top, titleBarOffset + availableHeight - height));
+ 				resizableElement.domNode.style.left = `${clampedLeft}px`;
 Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
 +++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
-@@ -245,6 +245,15 @@
- 	display: none;
+@@ -211,3 +211,49 @@
+ 	font-size: inherit;
+ 	font-weight: var(--vscode-fontWeight-regular);
  }
- 
--.monaco-workbench.dlx-compact .monaco-modal-editor-block .dlx-overlay-close {
--	display: flex;
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block {
++	background: var(--vscode-editor-background);
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-shadow,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part {
++	border-radius: 0;
++	box-shadow: none;
++	border: 0;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-header {
++	height: 44px;
++	min-height: 44px;
++	padding: 0 4px 0 12px;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-title .monaco-icon-label {
++	height: 44px;
++	line-height: 44px;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-action-separator,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-editor-actions,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-navigation,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-action-container > .monaco-toolbar {
++	display: none !important;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-modal-editor-block .dlx-overlay-close {
++	display: none;
++}
++
 +.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .title {
 +	display: none !important;
 +	height: 0 !important;
@@ -3329,7 +3465,7 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/me
 +
 +.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .editor-container {
 +	height: 100% !important;
- }
++}
 Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
