@@ -254,6 +254,28 @@ describe("parser", () => {
     })
   })
 
+  it("disables password auth in VSCODE_DEV even if config.yaml has one", async () => {
+    const [setDev, resetDev] = useEnv("VSCODE_DEV")
+    setDev("1")
+    try {
+      const args = await setDefaults(parse([]), { config: "x", auth: AuthType.Password })
+      expect(args.auth).toBe(AuthType.None)
+    } finally {
+      resetDev()
+    }
+  })
+
+  it("keeps explicit --auth in VSCODE_DEV", async () => {
+    const [setDev, resetDev] = useEnv("VSCODE_DEV")
+    setDev("1")
+    try {
+      const args = await setDefaults(parse(["--auth", "password"]))
+      expect(args.auth).toBe(AuthType.Password)
+    } finally {
+      resetDev()
+    }
+  })
+
   it("should error if value isn't provided", () => {
     expect(() => parse(["--auth"])).toThrowError(/--auth requires a value/)
     expect(() => parse(["--auth=", "--log=debug"])).toThrowError(/--auth requires a value/)

@@ -1,0 +1,16 @@
+---
+description: DroidLabX code-server product mission for every change
+alwaysApply: true
+---
+
+# DroidLabX code-server
+
+Fork of code-server for the DroidLabX Android IDE (`android-developer-studio`). VS Code is the `lib/vscode` submodule.
+
+- Main job: workbench UI for **portrait** and **tablet/desktop**, and strip what the phone does not need.
+- Touch `src/node` only when the server actually needs it (startup, memory, ARM/proot).
+- Change VS Code via quilt patches in `patches/`. Never edit the submodule without `quilt add`.
+- Host actions (Exit → Android back, and similar) are a configurable workbench-intent → `AdsHost` map. Do not grow injected CSS in the Android WebView.
+- English in code, UI, specs, commits.
+
+Read `AGENTS.md` before changing patches, the workbench, or the host bridge.

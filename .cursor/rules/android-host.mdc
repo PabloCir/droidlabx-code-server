@@ -1,0 +1,24 @@
+---
+description: Configurable workbench intents for the DroidLabX Android host
+globs: patches/**,lib/vscode/src/vs/workbench/**
+alwaysApply: false
+---
+
+# Android host actions
+
+Workbench UI that means something on the phone must emit a **named intent**, not a browser-only command.
+
+The WebView bridge is `window.AdsHost` in the host app. Today: `AdsHost.goBack()` for activity back.
+
+- Map intents in the Android app (configurable). This repo defines the intent names and when the workbench fires them.
+- Example: menu Exit / Back → intent `back` → host `goBack()`.
+- Add a row to the contract table in `AGENTS.md` when you ship a new intent.
+- Do not add more `evaluateJavascript` chrome hacks in `CodeScreen.kt`; put the UI in a quilt patch here.
+
+```text
+# ❌ BAD
+Android injects a DOM button and hides Copilot with CSS
+
+# ✅ GOOD
+Workbench control calls AdsHost; host maps `back` → Activity.back
+```

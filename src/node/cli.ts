@@ -605,8 +605,11 @@ export async function setDefaults(cliArgs: UserProvidedArgs, configArgs?: Config
       break
   }
 
-  // Default to using a password.
-  if (!args.auth) {
+  // DroidLabX watch sets VSCODE_DEV=1. Match the Android host: no login wall.
+  // Explicit --auth still wins; config.yaml password does not, in dev.
+  if (process.env.VSCODE_DEV === "1" && !cliArgs.auth) {
+    args.auth = AuthType.None
+  } else if (!args.auth) {
     args.auth = AuthType.Password
   }
 

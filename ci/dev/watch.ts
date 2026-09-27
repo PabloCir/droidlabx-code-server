@@ -22,14 +22,25 @@ class Watcher {
 
   /** Development web server. */
   private webServer: ChildProcess | undefined
+  private vscodeClientReady = false
+  private codeServerReady = false
 
   private reloadWebServer = (): void => {
+    // DEV workbench loads hundreds of modules. Serving before the client
+    // compile finishes, then killing the process when it does, leaves a blank tab.
+    if (!this.vscodeClientReady || !this.codeServerReady) {
+      return
+    }
+
     if (this.webServer) {
       this.webServer.kill()
     }
 
     // Pass CLI args, save for `node` and the initial script name.
     const args = process.argv.slice(2)
+    if (!args.some((arg) => arg === "--auth" || arg.startsWith("--auth="))) {
+      args.push("--auth", "none")
+    }
     this.webServer = spawn("node", [path.join(this.rootPath, "out/node/entry.js"), ...args])
     onLine(this.webServer, (line) => console.log("[code-server]", line))
     const { pid } = this.webServer
@@ -88,8 +99,13 @@ class Watcher {
     console.log("[Code OSS]", originalLine)
 
     if (strippedLine.includes("Finished compilation with")) {
+      const first = !this.vscodeClientReady
+      this.vscodeClientReady = true
       console.log("[Code OSS] ✨ Finished compiling! ✨", "(Refresh your web browser ♻️)")
-      this.reloadWebServer()
+      // Incremental client compiles only need a browser refresh, not a killed HTTP server.
+      if (first) {
+        this.reloadWebServer()
+      }
     }
   }
 
@@ -99,6 +115,7 @@ class Watcher {
     console.log("[Compiler][code-server]", originalLine)
 
     if (strippedLine.includes("Watching for file changes")) {
+      this.codeServerReady = true
       console.log("[Compiler][code-server]", "Finished compiling!", "(Refresh your web browser ♻️)")
       this.reloadWebServer()
     }

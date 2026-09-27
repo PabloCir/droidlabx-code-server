@@ -1,0 +1,3756 @@
+DroidLabX mobile/tablet workbench chrome
+
+Phone (width <768 or height <500, so landscape stays a drawer): drawer,
+floating Menu, compact status, hidden menubar, Find bar full width,
+panel as a bottom sheet. Tablet: left rail, Find stays in the corner,
+panel stays docked. Both: 44px Find, menus, suggests, select rows,
+toasts; Chat and Source Control hidden by icon class.
+Extensions: on the phone, a full-screen window with Installed, Search, and Recommended.
+Tablet and desktop keep the sidebar viewlet. 44px search. Phone extension page stacks actions.
+
+Reproduce: 390x844, 844x390, and 1024x768; e2e in test/e2e/droidlabxShell.test.ts.
+
+Index: droidlabx-code-server/lib/vscode/src/vs/base/browser/ui/dialog/dialog.css
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/base/browser/ui/dialog/dialog.css
++++ droidlabx-code-server/lib/vscode/src/vs/base/browser/ui/dialog/dialog.css
+@@ -253,3 +253,169 @@
+ .monaco-dialog-modal-block .dialog-shadow {
+ 	border-radius: var(--vscode-cornerRadius-xLarge);
+ }
++
++.monaco-dialog-modal-block.dlx-sheet {
++	justify-content: stretch;
++	align-items: stretch;
++	background: transparent;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .dialog-shadow {
++	flex: 1;
++	display: flex;
++	width: 100%;
++	height: 100%;
++	border-radius: 0;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .monaco-dialog-box {
++	width: 100%;
++	height: 100%;
++	max-width: none;
++	max-height: none;
++	min-width: 0;
++	min-height: 0;
++	border-radius: 0;
++	box-shadow: none;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .dialog-toolbar-row {
++	display: flex;
++	align-items: center;
++	justify-content: space-between;
++	height: 44px;
++	padding: 0 4px;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .dialog-title {
++	flex: 1;
++	overflow: hidden;
++	text-overflow: ellipsis;
++	white-space: nowrap;
++	font-weight: 600;
++	padding: 0 8px;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .dialog-toolbar .action-label {
++	width: 44px;
++	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	font-size: 20px;
++}
++
++/* Full-screen sheets only on phone. Tablet/desktop keep a dialog, just tighter. */
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet {
++	justify-content: center;
++	align-items: center;
++	padding: 12px;
++	background: rgba(0, 0, 0, 0.45);
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .dialog-shadow,
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .monaco-dialog-box {
++	width: auto;
++	height: auto;
++	max-width: min(720px, 100%);
++	max-height: calc(100% - 24px);
++	border-radius: 8px;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet {
++	justify-content: stretch;
++	align-items: stretch;
++	background: transparent;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .monaco-dialog-box .dialog-message {
++	display: none;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .monaco-dialog-box .dialog-message-row .dialog-message-detail {
++	flex: 0 1 auto;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .monaco-dialog-box .dialog-buttons-row {
++	flex-grow: 0;
++}
++
++.monaco-dialog-modal-block.dlx-sheet .dialog-title {
++	white-space: normal;
++	line-height: 1.3;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .monaco-dialog-box {
++	min-width: min(480px, calc(100% - 24px));
++	padding: 12px 16px 16px;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .dialog-message-row {
++	flex-grow: 0;
++	align-items: flex-start;
++	padding: 8px 4px 0;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .dialog-message-detail {
++	font-size: 13px;
++	line-height: 1.45;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .dialog-buttons {
++	margin-left: 0;
++	flex-wrap: wrap;
++	gap: 8px;
++	justify-content: flex-end;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-dialog-modal-block.dlx-sheet .dialog-buttons .monaco-button {
++	min-height: 36px;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-toolbar-row {
++	height: auto;
++	min-height: 44px;
++	padding: 8px 4px;
++	border-bottom: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.25));
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-message-row {
++	flex-grow: 1;
++	align-items: flex-start;
++	padding: 16px;
++	overflow: auto;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-message-row > .dialog-icon.codicon {
++	flex: 0 0 28px;
++	width: 28px;
++	height: 28px;
++	font-size: 28px;
++	margin-top: 2px;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-message-container {
++	padding-left: 12px;
++	font-size: 15px;
++	line-height: 1.45;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-buttons-row {
++	padding: 12px 16px max(12px, env(safe-area-inset-bottom));
++	white-space: normal;
++	overflow: visible;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-buttons {
++	margin-left: 0 !important;
++	flex-direction: column;
++	flex-wrap: nowrap;
++	gap: 8px;
++	width: 100%;
++}
++
++.monaco-workbench.dlx-compact .monaco-dialog-modal-block.dlx-sheet .dialog-buttons .monaco-button {
++	width: 100%;
++	min-height: 44px;
++	margin: 0;
++}
+Index: droidlabx-code-server/lib/vscode/src/vs/base/browser/ui/dialog/dialog.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/base/browser/ui/dialog/dialog.ts
++++ droidlabx-code-server/lib/vscode/src/vs/base/browser/ui/dialog/dialog.ts
+@@ -129,7 +129,7 @@ export class Dialog extends Disposable {
+ 		super();
+ 
+ 		// Modal background blocker
+-		this.modalElement = this.container.appendChild($(`.monaco-dialog-modal-block.dimmed`));
++		this.modalElement = this.container.appendChild($(`.monaco-dialog-modal-block.dlx-sheet`));
+ 		if (options.modalBlockExtraClasses) {
+ 			this.modalElement.classList.add(...options.modalBlockExtraClasses);
+ 		}
+@@ -249,8 +249,10 @@ export class Dialog extends Disposable {
+ 			this._register(addDisposableListener(checkboxMessageElement, EventType.CLICK, () => checkbox.checked = !checkbox.checked));
+ 		}
+ 
+-		// Toolbar
++		// Toolbar: title + close (full-screen sheet)
+ 		const toolbarRowElement = this.element.appendChild($('.dialog-toolbar-row'));
++		const titleElement = toolbarRowElement.appendChild($('.dialog-title'));
++		titleElement.textContent = this.message;
+ 		this.toolbarContainer = toolbarRowElement.appendChild($('.dialog-toolbar'));
+ 
+ 		this.applyStyles();
+@@ -560,7 +562,7 @@ export class Dialog extends Disposable {
+ 			if (!this.options.disableCloseAction && !this.options.disableCloseButton) {
+ 				const actionBar = this._register(new ActionBar(this.toolbarContainer, {}));
+ 
+-				const action = this._register(new Action('dialog.close', localize('dialogClose', "Close Dialog"), ThemeIcon.asClassName(Codicon.dialogClose), true, async () => {
++				const action = this._register(new Action('dialog.close', localize('dialogClose', "Close Dialog"), `${ThemeIcon.asClassName(Codicon.dialogClose)} dlx-overlay-close`, true, async () => {
+ 					resolve({
+ 						button: this.options.cancelId || 0,
+ 						checkboxChecked: this.checkbox ? this.checkbox.checked : undefined
+@@ -609,7 +611,7 @@ export class Dialog extends Disposable {
+ 		const border = style.dialogBorder ? `1px solid ${style.dialogBorder}` : '';
+ 		const linkFgColor = style.textLinkForeground;
+ 
+-		this.shadowElement.style.boxShadow = shadowColor;
++		this.shadowElement.style.boxShadow = this.modalElement?.classList.contains('dlx-sheet') ? '' : shadowColor;
+ 
+ 		this.element.style.color = fgColor ?? '';
+ 		this.element.style.backgroundColor = bgColor ?? '';
+Index: droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/media/quickInput.css
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/platform/quickinput/browser/media/quickInput.css
++++ droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/media/quickInput.css
+@@ -13,6 +13,158 @@
+ 	box-shadow: var(--vscode-shadow-xl);
+ }
+ 
++.dlx-compact .quick-input-widget.dlx-sheet:not(.quick-input-widget-overlay) {
++	left: 0;
++	top: 0;
++	width: 100%;
++	height: 100%;
++	max-width: none;
++	border-radius: 0;
++	box-shadow: none;
++	display: flex;
++	flex-direction: column;
++}
++
++.monaco-workbench:not(.dlx-compact) .quick-input-widget.dlx-sheet:not(.quick-input-widget-overlay) {
++	width: min(720px, calc(100% - 24px));
++}
++
++.quick-input-widget.dlx-sheet .quick-input-titlebar {
++	display: none;
++	min-height: 0;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-titlebar:has(.action-item),
++.quick-input-widget.dlx-sheet .quick-input-titlebar:has(.quick-input-title:not([style*="display: none"])) {
++	display: flex;
++	min-height: 44px;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-header {
++	align-items: flex-start;
++	gap: 8px;
++	padding: 8px 12px 8px;
++}
++
++.quick-input-widget.dlx-sheet .dlx-overlay-close {
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	flex: 0 0 48px;
++	box-sizing: border-box;
++	width: 48px;
++	height: 48px;
++	margin: 0;
++	padding: 0;
++	border: 1px solid color-mix(in srgb, var(--vscode-foreground) 32%, transparent);
++	border-radius: var(--vscode-cornerRadius-medium);
++	background: var(--vscode-input-background);
++	color: var(--vscode-input-foreground);
++	cursor: pointer;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-filter .monaco-inputbox {
++	height: 48px;
++	min-height: 48px;
++	font-size: 16px;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-filter .monaco-inputbox > .ibwrapper,
++.quick-input-widget.dlx-sheet .quick-input-filter .monaco-inputbox > .ibwrapper > .input {
++	height: 48px;
++	line-height: 48px;
++	padding-top: 0;
++	padding-bottom: 0;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-list,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-list {
++	max-height: none;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-scrollable-element {
++	padding: 0 8px;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-list-row,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-list-row {
++	box-sizing: border-box;
++	padding: 8px 4px;
++	background: transparent !important;
++	outline: none !important;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-entry,
++.quick-input-widget.dlx-sheet .quick-input-tree .quick-input-tree-entry {
++	height: 100%;
++	align-items: center;
++	padding: 0 12px;
++	border-radius: 10px;
++	background: color-mix(in srgb, var(--vscode-foreground) 6%, transparent);
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-label,
++.quick-input-widget.dlx-sheet .quick-input-tree .quick-input-tree-label {
++	align-items: center;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-rows,
++.quick-input-widget.dlx-sheet .quick-input-tree .quick-input-tree-rows {
++	justify-content: center;
++	font-size: 16px;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-icon,
++.quick-input-widget.dlx-sheet .quick-input-tree .quick-input-tree-icon {
++	width: 22px;
++	height: 22px;
++	background-size: 22px;
++	background-position: center;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-checkbox,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-checkbox {
++	margin-top: 0;
++	align-self: center;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-list-row:hover .quick-input-list-entry,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-list-row:hover .quick-input-tree-entry {
++	background: var(--vscode-list-hoverBackground);
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-list-row.focused .quick-input-list-entry,
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-list-row.passive-focused .quick-input-list-entry,
++.quick-input-widget.dlx-sheet .quick-input-list .monaco-list-row.selected .quick-input-list-entry,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-list-row.focused .quick-input-tree-entry,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-list-row.passive-focused .quick-input-tree-entry,
++.quick-input-widget.dlx-sheet .quick-input-tree .monaco-list-row.selected .quick-input-tree-entry {
++	background: var(--vscode-quickInputList-focusBackground);
++	color: var(--vscode-quickInputList-focusForeground);
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list > .monaco-list:focus .monaco-list-row.focused .quick-input-list-entry {
++	outline: 1px solid var(--vscode-list-focusOutline);
++	outline-offset: -1px;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-entry-action-bar {
++	margin-top: 0;
++	align-items: center;
++}
++
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-entry-action-bar .action-label.codicon,
++.quick-input-widget.dlx-sheet .quick-input-list .quick-input-list-entry-action-bar .monaco-custom-toggle.codicon {
++	width: 40px;
++	height: 40px;
++	margin-right: 0;
++	padding: 0;
++	font-size: 18px;
++	border-radius: 8px;
++	align-items: center;
++	justify-content: center;
++}
++
+ .modern-ui.monaco-enable-motion .quick-input-widget:not(.quick-input-widget-overlay) {
+ 	animation: quick-input-widget-open 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+ 	transform-origin: top center;
+Index: droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/quickInputController.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/platform/quickinput/browser/quickInputController.ts
++++ droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/quickInputController.ts
+@@ -34,6 +34,8 @@ import { IConfigurationService } from '.
+ import { Platform, platform, setTimeout0 } from '../../../base/common/platform.js';
+ import { getWindowControlsStyle, WindowControlsStyle } from '../../window/common/window.js';
+ import { getZoomFactor } from '../../../base/browser/browser.js';
++import { Codicon } from '../../../base/common/codicons.js';
++import { ThemeIcon } from '../../../base/common/themables.js';
+ import { TriStateCheckbox, createToggleActionViewItemProvider } from '../../../base/browser/ui/toggle/toggle.js';
+ import { defaultCheckboxStyles } from '../../theme/browser/defaultStyles.js';
+ import { QuickInputTreeController } from './tree/quickInputTreeController.js';
+@@ -161,7 +163,7 @@ export class QuickInputController extend
+ 			return this.ui;
+ 		}
+ 
+-		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons'));
++		const container = dom.append(this._container, $('.quick-input-widget.show-file-icons.dlx-sheet'));
+ 		container.tabIndex = -1;
+ 		container.style.display = 'none';
+ 
+@@ -205,6 +207,14 @@ export class QuickInputController extend
+ 		const inputContainer = dom.append(headerContainer, $('.quick-input-and-message'));
+ 		const filterContainer = dom.append(inputContainer, $('.quick-input-filter'));
+ 
++		const closeButton = dom.append(headerContainer, $('button.dlx-overlay-close')) as HTMLButtonElement;
++		closeButton.type = 'button';
++		closeButton.setAttribute('aria-label', localize('droidlabx.closeQuickInput', "Close"));
++		const closeIcon = dom.append(closeButton, $('span'));
++		closeIcon.className = ThemeIcon.asClassName(Codicon.close);
++		closeIcon.setAttribute('aria-hidden', 'true');
++		this._register(dom.addDisposableListener(closeButton, dom.EventType.CLICK, () => this.hide()));
++
+ 		const inputBox = this._register(new QuickInputBox(filterContainer, this.styles.inputBox, this.styles.toggle));
+ 		inputBox.setAttribute('aria-describedby', `${this.idPrefix}message`);
+ 
+@@ -774,7 +784,7 @@ export class QuickInputController extend
+ 
+ 	private setVisibilities(visibilities: Visibilities) {
+ 		const ui = this.getUI();
+-		ui.titleBar.style.display = visibilities.title ? '' : 'none';
++		ui.titleBar.style.display = '';
+ 		ui.title.style.display = visibilities.title ? '' : 'none';
+ 		ui.description1.style.display = visibilities.description && (visibilities.inputBox || visibilities.checkAll) ? '' : 'none';
+ 		ui.description2.style.display = visibilities.description && !(visibilities.inputBox || visibilities.checkAll) ? '' : 'none';
+@@ -943,6 +953,21 @@ export class QuickInputController extend
+ 	private updateLayout() {
+ 		if (this.ui && this.isVisible()) {
+ 			const style = this.ui.container.style;
++			if (this.ui.container.classList.contains('dlx-sheet') && !this.controller?.anchor) {
++				void this.titleBarOffset;
++				style.top = '0px';
++				style.left = '0px';
++				style.right = '0px';
++				style.bottom = '0px';
++				style.width = '100%';
++				style.height = '100%';
++				this.ui.inputBox.layout();
++				const chrome = 64;
++				const listHeight = Math.max(120, (this.dimension?.height ?? 0) - chrome);
++				this.ui.list.layout(listHeight);
++				this.ui.tree.layout(listHeight);
++				return;
++			}
+ 			let width = Math.min(this.dimension!.width * 0.62 /* golden cut */, QuickInputController.MAX_WIDTH);
+ 			style.width = width + 'px';
+ 
+@@ -1000,11 +1025,14 @@ export class QuickInputController extend
+ 				style.width = `${width}px`;
+ 				style.height = '';
+ 			} else {
+-				style.top = `${this.viewState?.top !== undefined ? Math.round(this.dimension!.height * this.viewState.top) : this.titleBarOffset}px`;
+-				style.left = `${Math.round((this.dimension!.width * (this.viewState?.left ?? 0.5 /* center */)) - (width / 2))}px`;
+-				style.right = '';
+-				style.bottom = '';
+-				style.height = '';
++				style.top = '0';
++				style.left = '0';
++				style.right = '0';
++				style.bottom = '0';
++				style.width = '100%';
++				style.height = '100%';
++				width = this.dimension!.width;
++				listHeight = Math.max(120, this.dimension!.height - 120);
+ 			}
+ 
+ 			if (overlayAnchor) {
+Index: droidlabx-code-server/lib/vscode/src/vs/server/node/webClientServer.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/server/node/webClientServer.ts
++++ droidlabx-code-server/lib/vscode/src/vs/server/node/webClientServer.ts
+@@ -464,6 +464,7 @@ export class WebClientServer {
+ 				'window.commandCenter': false,
+ 				'workbench.commandCenter': false,
+ 				'workbench.layoutControl.enabled': false,
++				'workbench.activity.showAccounts': false,
+ 				'workbench.secondarySideBar.defaultVisibility': 'hidden',
+ 				'security.workspace.trust.enabled': false,
+ 				'security.workspace.trust.startupPrompt': 'never',
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/globalCompositeBar.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/globalCompositeBar.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/globalCompositeBar.ts
+@@ -53,13 +53,11 @@ import { createCodexAccountMenuActions,
+ 
+ export class GlobalCompositeBar extends Disposable {
+ 
+-	private static readonly ACCOUNTS_ACTION_INDEX = 0;
+ 	static readonly ACCOUNTS_ICON = registerIcon('accounts-view-bar-icon', Codicon.account, localize('accountsViewBarIcon', "Accounts icon in the view bar."));
+ 
+ 	readonly element: HTMLElement;
+ 
+ 	private readonly globalActivityAction = this._register(new Action(GLOBAL_ACTIVITY_ID));
+-	private readonly accountAction = this._register(new Action(ACCOUNTS_ACTIVITY_ID));
+ 	private readonly globalActivityActionBar: ActionBar;
+ 
+ 	constructor(
+@@ -101,17 +99,13 @@ export class GlobalCompositeBar extends
+ 						});
+ 				}
+ 
+-				throw new Error(`No view item for action '${action.id}'`);
++				return undefined;
+ 			},
+ 			orientation: ActionsOrientation.VERTICAL,
+ 			ariaLabel: localize('manage', "Manage"),
+ 			preventLoopNavigation: true
+ 		}));
+ 
+-		if (this.accountsVisibilityPreference) {
+-			this.globalActivityActionBar.push(this.accountAction, { index: GlobalCompositeBar.ACCOUNTS_ACTION_INDEX });
+-		}
+-
+ 		this.globalActivityActionBar.push(this.globalActivityAction);
+ 
+ 		this.registerListeners();
+@@ -134,26 +128,11 @@ export class GlobalCompositeBar extends
+ 	}
+ 
+ 	getContextMenuActions(): IAction[] {
+-		return [toAction({ id: 'toggleAccountsVisibility', label: localize('accounts', "Accounts"), checked: this.accountsVisibilityPreference, run: () => this.accountsVisibilityPreference = !this.accountsVisibilityPreference })];
++		return [];
+ 	}
+ 
+ 	private toggleAccountsActivity() {
+-		if (this.globalActivityActionBar.length() === 2 && this.accountsVisibilityPreference) {
+-			return;
+-		}
+-		if (this.globalActivityActionBar.length() === 2) {
+-			this.globalActivityActionBar.pull(GlobalCompositeBar.ACCOUNTS_ACTION_INDEX);
+-		} else {
+-			this.globalActivityActionBar.push(this.accountAction, { index: GlobalCompositeBar.ACCOUNTS_ACTION_INDEX });
+-		}
+-	}
+-
+-	private get accountsVisibilityPreference(): boolean {
+-		return isAccountsActionVisible(this.storageService);
+-	}
+-
+-	private set accountsVisibilityPreference(value: boolean) {
+-		setAccountsActionVisible(this.storageService, value);
++		// DroidLabX: accounts stay off the global composite bar.
+ 	}
+ }
+ 
+@@ -840,7 +819,7 @@ function simpleActivityContextMenuAction
+ }
+ 
+ export function isAccountsActionVisible(storageService: IStorageService): boolean {
+-	return storageService.getBoolean(AccountsActivityActionViewItem.ACCOUNTS_VISIBILITY_PREFERENCE_KEY, StorageScope.PROFILE, true);
++	return false;
+ }
+ 
+ function setAccountsActionVisible(storageService: IStorageService, visible: boolean) {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/statusbar/statusbarPart.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/statusbar/statusbarPart.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/statusbar/statusbarPart.ts
+@@ -142,8 +142,11 @@ class StatusbarPart extends Part impleme
+ 
+ 	readonly minimumWidth: number = 0;
+ 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+-	get minimumHeight(): number { return StatusbarPart.HEIGHT + this.floatingBottomPadding; }
+-	get maximumHeight(): number { return StatusbarPart.HEIGHT + this.floatingBottomPadding; }
++	get minimumHeight(): number {
++		const compact = this.layoutService.mainContainer.classList.contains('dlx-compact');
++		return (compact ? 36 : StatusbarPart.HEIGHT) + this.floatingBottomPadding;
++	}
++	get maximumHeight(): number { return this.minimumHeight; }
+ 
+ 	//#endregion
+ 
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxHost.ts
+===================================================================
+--- /dev/null
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxHost.ts
+@@ -0,0 +1,35 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { localize2 } from '../../../../nls.js';
++import { Codicon } from '../../../../base/common/codicons.js';
++import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
++
++export const HOST_BACK_ID = 'droidlabx.host.back';
++
++type AdsHost = { goBack(): void };
++
++/** Named intent `back`: Android `AdsHost.goBack()`. No-op in `npm run watch`. */
++export function goBack(): void {
++	const host = (globalThis as { AdsHost?: AdsHost }).AdsHost;
++	if (host && typeof host.goBack === 'function') {
++		host.goBack();
++	}
++}
++
++registerAction2(class extends Action2 {
++	constructor() {
++		super({
++			id: HOST_BACK_ID,
++			title: localize2('droidlabx.exit', 'Exit'),
++			icon: Codicon.signOut,
++			f1: true,
++		});
++	}
++
++	run(): void {
++		goBack();
++	}
++});
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxOverlays.ts
+===================================================================
+--- /dev/null
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxOverlays.ts
+@@ -0,0 +1,21 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
++import { IWorkbenchLayoutService } from '../../../services/layout/browser/layoutService.js';
++
++/** Marks the workbench so dialogs and quick input render as full-screen sheets. */
++export class DroidLabXOverlaysContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.droidlabxOverlays';
++
++	constructor(
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
++	) {
++		layoutService.mainContainer.classList.add('dlx-chrome');
++	}
++}
++
++registerWorkbenchContribution2(DroidLabXOverlaysContribution.ID, DroidLabXOverlaysContribution, WorkbenchPhase.AfterRestored);
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxShell.contribution.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxShell.contribution.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxShell.contribution.ts
+@@ -4,6 +4,8 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ import './media/droidlabxShell.css';
++import './droidlabxHost.js';
++import './droidlabxOverlays.js';
+ import { localize, localize2 } from '../../../../nls.js';
+ import { Codicon } from '../../../../base/common/codicons.js';
+ import { ThemeIcon } from '../../../../base/common/themables.js';
+@@ -11,24 +13,41 @@ import { IWorkbenchContribution, Workben
+ import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
+ import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+ import { ConfigurationTarget, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+-import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
++import { ICommandService } from '../../../../platform/commands/common/commands.js';
+ import { IWorkbenchLayoutService, Parts } from '../../../services/layout/browser/layoutService.js';
+ import { IEditorService } from '../../../services/editor/common/editorService.js';
++import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
++import { ViewContainerLocation } from '../../../common/views.js';
++import { HOST_BACK_ID } from './droidlabxHost.js';
++import { IExtensionsViewPaneContainer, VIEWLET_ID } from '../../extensions/common/extensions.js';
++import { mainWindow } from '../../../../base/browser/window.js';
++import { setGlobalPaneHeaderSize } from '../../../../base/browser/ui/splitview/paneview.js';
++import { COMPACT_EXPLORER_ITEM_HEIGHT, setExplorerItemHeight } from '../../files/browser/views/explorerViewer.js';
++import { setNotificationRowHeight } from '../../../browser/parts/notifications/notificationsViewer.js';
+ 
+-/** Phone portrait / narrow webview. Tablet and desktop keep the side rail. */
++/** Phone, including landscape. Tablet and desktop keep the side rail. */
+ export const DLX_COMPACT_MAX_WIDTH = 768;
++/** Rotated phone: the short side stays under this, so the rail does not eat it. */
++export const DLX_COMPACT_MAX_HEIGHT = 500;
+ 
+ export const DroidLabXCompactContext = new RawContextKey<boolean>('droidlabx.compact', false);
+ 
+-const ACCOUNTS_VISIBILITY_KEY = 'workbench.activity.showAccounts';
+ const TOGGLE_DRAWER_ID = 'droidlabx.toggleDrawer';
++const DRAWER_ACTIVITY_WIDTH = 48;
++const DRAWER_SIDEBAR_WIDTH = 280;
++const TOUCH_TARGET = 44;
+ 
+-function setDrawerHidden(layoutService: IWorkbenchLayoutService, hidden: boolean): void {
++let shellInstance: DroidLabXShellContribution | undefined;
++
++function hideRail(layoutService: IWorkbenchLayoutService, hidden: boolean): void {
+ 	layoutService.setPartHidden(hidden, Parts.SIDEBAR_PART);
+ 	layoutService.setPartHidden(hidden, Parts.ACTIVITYBAR_PART);
+ }
+ 
++type LayoutParts = IWorkbenchLayoutService & {
++	getPart(part: Parts): { layout(width: number, height: number, top: number, left: number): void };
++};
++
+ export class DroidLabXShellContribution implements IWorkbenchContribution {
+ 
+ 	static readonly ID = 'workbench.contrib.droidlabxShell';
+@@ -36,67 +55,302 @@ export class DroidLabXShellContribution
+ 	private readonly compactKey: IContextKey<boolean>;
+ 	private compact = false;
+ 	private applied = false;
++	private drawerOpen = false;
++	private drawerLock = false;
++	/** True while the menu is switching to Explorer, so a restored Extensions composite cannot open the window. */
++	private openingDrawer = false;
++	private lastEditorKey: string | undefined;
+ 	private drawerButton: HTMLButtonElement | undefined;
++	private drawerScrim: HTMLButtonElement | undefined;
++	private exitButton: HTMLButtonElement | undefined;
++	private panelClose: HTMLButtonElement | undefined;
++	private panelScrim: HTMLButtonElement | undefined;
++	/** Panel was visible when compact mode hid it, so leaving compact shows it again. */
++	private panelHiddenByCompact = false;
++	private panelLayoutLock = false;
++	/** Phone extensions screen. Tablet and desktop keep the sidebar viewlet. */
++	private extensionsWindow = false;
++	private extensionsTab: 'installed' | 'search' | 'recommended' = 'installed';
+ 
+ 	constructor(
+ 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+ 		@IContextKeyService contextKeyService: IContextKeyService,
+ 		@IConfigurationService private readonly configurationService: IConfigurationService,
+ 		@IEditorService private readonly editorService: IEditorService,
+-		@IStorageService storageService: IStorageService,
++		@ICommandService private readonly commandService: ICommandService,
++		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
+ 	) {
+ 		this.compactKey = DroidLabXCompactContext.bindTo(contextKeyService);
++		shellInstance = this;
++		this.lastEditorKey = this.editorService.activeEditor?.resource?.toString();
+ 
+-		if (storageService.get(ACCOUNTS_VISIBILITY_KEY, StorageScope.PROFILE) === undefined) {
+-			storageService.store(ACCOUNTS_VISIBILITY_KEY, false, StorageScope.PROFILE, StorageTarget.MACHINE);
+-		}
+-
+-		this.apply(this.layoutService.mainContainerDimension.width);
+-		this.layoutService.onDidLayoutMainContainer(dimension => this.apply(dimension.width));
++		const initial = this.layoutService.mainContainerDimension;
++		this.apply(initial.width, initial.height);
++		this.bindKeyboardInset();
++		this.layoutService.onDidLayoutMainContainer(dimension => {
++			this.apply(dimension.width, dimension.height);
++			if (this.compact && this.extensionsWindow) {
++				this.layoutExtensionsWindow();
++				if (!this.layoutService.mainContainer.querySelector('.dlx-extensions-chrome')) {
++					this.ensureExtensionsChrome();
++					if (this.layoutService.mainContainer.querySelector('.dlx-extensions-chrome')) {
++						this.showExtensionsTab(this.extensionsTab);
++					}
++				}
++			} else if (this.compact && this.drawerOpen) {
++				this.layoutDrawerParts();
++			}
++			if (this.compact && this.layoutService.isVisible(Parts.PANEL_PART)) {
++				this.layoutPanelSheet();
++			}
++		});
++		this.paneCompositeService.onDidPaneCompositeOpen(e => {
++			if (!this.compact || e.viewContainerLocation !== ViewContainerLocation.Sidebar) {
++				return;
++			}
++			if (e.composite.getId() === VIEWLET_ID && !this.openingDrawer) {
++				this.openExtensionsWindow();
++			}
++		});
++		this.layoutService.onDidChangePartVisibility(() => {
++			this.syncExitButton();
++			this.syncPanelSheet();
++			if (!this.drawerLock && this.compact && this.drawerOpen && !this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
++				this.setDrawerOpen(false);
++			}
++		});
+ 		this.editorService.onDidActiveEditorChange(() => {
+-			if (this.compact && this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
+-				setDrawerHidden(this.layoutService, true);
++			const key = this.editorService.activeEditor?.resource?.toString();
++			const changed = key !== this.lastEditorKey;
++			this.lastEditorKey = key;
++			if (this.drawerLock) {
++				return;
++			}
++			if (changed && this.compact && this.extensionsWindow && this.editorService.activeEditor?.typeId === 'workbench.extensions.input2') {
++				this.closeExtensionsWindow();
++			} else if (changed && this.compact && this.drawerOpen) {
++				this.setDrawerOpen(false);
++			} else {
+ 				this.syncDrawerButton();
+ 			}
+ 		});
+ 	}
+ 
+-	private apply(width: number): void {
++	private apply(width: number, height: number): void {
+ 		if (width < 200) {
+ 			return;
+ 		}
+-		const compact = width < DLX_COMPACT_MAX_WIDTH;
++		const compact = width < DLX_COMPACT_MAX_WIDTH || height < DLX_COMPACT_MAX_HEIGHT;
+ 		if (!this.applied || compact !== this.compact) {
+ 			this.applied = true;
+ 			this.compact = compact;
+ 			this.compactKey.set(compact);
+ 			this.layoutService.mainContainer.classList.toggle('dlx-compact', compact);
++			setGlobalPaneHeaderSize(TOUCH_TARGET);
++			setExplorerItemHeight(COMPACT_EXPLORER_ITEM_HEIGHT);
++			setNotificationRowHeight(TOUCH_TARGET);
++			void this.configurationService.updateValue('editor.suggestLineHeight', TOUCH_TARGET, ConfigurationTarget.MEMORY);
++			void this.configurationService.updateValue('workbench.notifications.position', 'top-right', ConfigurationTarget.MEMORY);
++			this.layoutService.layout();
+ 
+ 			if (compact) {
+-				setDrawerHidden(this.layoutService, true);
++				this.panelHiddenByCompact = this.layoutService.isVisible(Parts.PANEL_PART);
++				hideRail(this.layoutService, true);
+ 				this.layoutService.setPartHidden(true, Parts.PANEL_PART);
+ 				this.layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART);
+ 				void this.configurationService.updateValue('editor.minimap.enabled', false, ConfigurationTarget.MEMORY);
+ 				void this.configurationService.updateValue('editor.wordWrap', 'on', ConfigurationTarget.MEMORY);
+ 				void this.configurationService.updateValue('workbench.editor.showTabs', 'single', ConfigurationTarget.MEMORY);
++				void this.configurationService.updateValue('window.menuBarVisibility', 'hidden', ConfigurationTarget.MEMORY);
+ 			} else {
++				this.closeExtensionsWindow();
++				this.setDrawerOpen(false);
+ 				void this.configurationService.updateValue('editor.minimap.enabled', undefined, ConfigurationTarget.MEMORY);
+ 				void this.configurationService.updateValue('editor.wordWrap', undefined, ConfigurationTarget.MEMORY);
+ 				void this.configurationService.updateValue('workbench.editor.showTabs', undefined, ConfigurationTarget.MEMORY);
+-				setDrawerHidden(this.layoutService, false);
++				void this.configurationService.updateValue('window.menuBarVisibility', undefined, ConfigurationTarget.MEMORY);
++				hideRail(this.layoutService, false);
++				if (this.panelHiddenByCompact) {
++					this.layoutService.setPartHidden(false, Parts.PANEL_PART);
++					this.panelHiddenByCompact = false;
++				}
++				this.layoutService.mainContainer.classList.remove('dlx-panel-open');
+ 			}
+ 		}
+ 
+ 		this.syncDrawerButton();
++		this.syncExitButton();
++	}
++
++	toggleDrawer(): void {
++		if (this.compact) {
++			this.setDrawerOpen(!this.drawerOpen);
++		}
++	}
++
++	private setDrawerOpen(open: boolean): void {
++		this.drawerLock = true;
++		if (!open) {
++			this.openingDrawer = false;
++			this.drawerOpen = false;
++			this.layoutService.mainContainer.classList.remove('dlx-drawer-open');
++			hideRail(this.layoutService, true);
++			this.drawerLock = false;
++			this.syncDrawerButton();
++			this.syncExitButton();
++			return;
++		}
++		this.openingDrawer = true;
++		let id = this.paneCompositeService.getLastActivePaneCompositeId(ViewContainerLocation.Sidebar);
++		if (id === 'workbench.view.scm' || id === VIEWLET_ID) {
++			id = 'workbench.view.explorer';
++		}
++		void this.paneCompositeService.openPaneComposite(id, ViewContainerLocation.Sidebar, false).finally(() => {
++			const active = this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
++			const reveal = active?.getId() === VIEWLET_ID
++				? this.paneCompositeService.openPaneComposite('workbench.view.explorer', ViewContainerLocation.Sidebar, false)
++				: Promise.resolve(undefined);
++			void reveal.finally(() => {
++				this.drawerOpen = true;
++				this.layoutService.mainContainer.classList.add('dlx-drawer-open');
++				hideRail(this.layoutService, false);
++				this.layoutDrawerParts();
++				this.syncDrawerButton();
++				this.syncExitButton();
++				mainWindow.requestAnimationFrame(() => {
++					this.layoutDrawerParts();
++					this.openingDrawer = false;
++					this.drawerLock = false;
++				});
++			});
++		});
++	}
++
++	private layoutDrawerParts(): void {
++		if (!this.compact || !this.drawerOpen) {
++			return;
++		}
++		const height = Math.max(1, this.layoutService.mainContainerDimension.height);
++		const layout = this.layoutService as LayoutParts;
++		layout.getPart(Parts.ACTIVITYBAR_PART).layout(DRAWER_ACTIVITY_WIDTH, height, 0, 0);
++		layout.getPart(Parts.SIDEBAR_PART).layout(DRAWER_SIDEBAR_WIDTH, height, 0, DRAWER_ACTIVITY_WIDTH);
++	}
++
++	private bindKeyboardInset(): void {
++		const viewport = mainWindow.visualViewport;
++		if (!viewport) {
++			return;
++		}
++		const applyInset = () => {
++			const overlap = Math.max(0, Math.round(mainWindow.innerHeight - viewport.offsetTop - viewport.height));
++			const next = overlap > 0 ? `${overlap}px` : '';
++			const container = this.layoutService.mainContainer;
++			if (container.style.paddingBottom === next) {
++				return;
++			}
++			container.style.paddingBottom = next;
++			this.layoutService.layout();
++		};
++		viewport.addEventListener('resize', applyInset);
++		viewport.addEventListener('scroll', applyInset);
++	}
++
++	private layoutPanelSheet(): void {
++		if (this.panelLayoutLock || !this.compact || !this.layoutService.isVisible(Parts.PANEL_PART)) {
++			return;
++		}
++		this.panelLayoutLock = true;
++		try {
++			const width = Math.max(1, this.layoutService.mainContainerDimension.width);
++			const available = Math.max(1, this.layoutService.mainContainerDimension.height);
++			const height = Math.max(TOUCH_TARGET * 4, Math.round(available * 0.5));
++			const top = Math.max(0, available - height - 36);
++			const layout = this.layoutService as LayoutParts;
++			layout.getPart(Parts.PANEL_PART).layout(width, height, top, 0);
++		} finally {
++			this.panelLayoutLock = false;
++		}
++	}
++
++	private closePanel(): void {
++		this.layoutService.setPartHidden(true, Parts.PANEL_PART);
++		this.syncPanelSheet();
++	}
++
++	private syncPanelSheet(): void {
++		const open = this.compact && this.layoutService.isVisible(Parts.PANEL_PART);
++		this.layoutService.mainContainer.classList.toggle('dlx-panel-open', open);
++		if (!open) {
++			this.panelClose?.remove();
++			this.panelClose = undefined;
++			this.panelScrim?.remove();
++			this.panelScrim = undefined;
++			return;
++		}
++
++		if (!this.panelScrim) {
++			const scrim = document.createElement('button');
++			scrim.type = 'button';
++			scrim.className = 'dlx-panel-scrim';
++			scrim.setAttribute('aria-label', localize('droidlabx.panelDismiss', 'Close panel'));
++			scrim.addEventListener('click', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++				this.closePanel();
++			});
++			this.panelScrim = scrim;
++		}
++		if (this.panelScrim.parentElement !== this.layoutService.mainContainer) {
++			this.layoutService.mainContainer.appendChild(this.panelScrim);
++		}
++
++		if (!this.panelClose) {
++			const button = document.createElement('button');
++			button.type = 'button';
++			button.className = 'dlx-overlay-close dlx-panel-close';
++			button.setAttribute('aria-label', localize('droidlabx.panelClose', 'Close panel'));
++			const icon = document.createElement('span');
++			icon.className = ThemeIcon.asClassName(Codicon.close);
++			icon.setAttribute('aria-hidden', 'true');
++			button.appendChild(icon);
++			button.addEventListener('click', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++				this.closePanel();
++			});
++			this.panelClose = button;
++		}
++		const panel = this.layoutService.getContainer(mainWindow, Parts.PANEL_PART);
++		const title = panel?.querySelector(':scope > .composite.title, :scope > .title');
++		const host = title instanceof HTMLElement ? title : panel;
++		if (host && this.panelClose.parentElement !== host) {
++			host.appendChild(this.panelClose);
++		}
++		this.layoutPanelSheet();
+ 	}
+ 
+ 	private syncDrawerButton(): void {
+ 		if (!this.compact) {
+ 			this.drawerButton?.remove();
+ 			this.drawerButton = undefined;
++			this.drawerScrim?.remove();
++			this.drawerScrim = undefined;
+ 			return;
+ 		}
+ 
++		if (!this.drawerScrim) {
++			const scrim = document.createElement('button');
++			scrim.type = 'button';
++			scrim.className = 'dlx-drawer-scrim';
++			scrim.setAttribute('aria-label', localize('droidlabx.drawerDismiss', 'Close menu'));
++			scrim.addEventListener('click', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++				this.setDrawerOpen(false);
++			});
++			this.drawerScrim = scrim;
++		}
++
+ 		if (!this.drawerButton) {
+ 			const button = document.createElement('button');
+ 			button.type = 'button';
+@@ -106,18 +360,225 @@ export class DroidLabXShellContribution
+ 			icon.className = ThemeIcon.asClassName(Codicon.menu);
+ 			icon.setAttribute('aria-hidden', 'true');
+ 			button.appendChild(icon);
++			button.draggable = false;
++			button.addEventListener('mousedown', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++			});
++			button.addEventListener('pointerdown', (e) => e.stopPropagation());
++			button.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
++			button.addEventListener('dragstart', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++			});
+ 			button.addEventListener('click', (e) => {
+ 				e.preventDefault();
+ 				e.stopPropagation();
+-				setDrawerHidden(this.layoutService, this.layoutService.isVisible(Parts.SIDEBAR_PART));
+-				this.syncDrawerButton();
++				this.setDrawerOpen(!this.drawerOpen);
+ 			});
+ 			this.drawerButton = button;
+ 		}
+ 
+-		this.drawerButton.setAttribute('aria-expanded', String(this.layoutService.isVisible(Parts.SIDEBAR_PART)));
+-		if (this.drawerButton.parentElement !== this.layoutService.mainContainer) {
+-			this.layoutService.mainContainer.appendChild(this.drawerButton);
++		const icon = this.drawerButton.querySelector('span');
++		if (icon) {
++			icon.className = ThemeIcon.asClassName(this.drawerOpen ? Codicon.close : Codicon.menu);
++		}
++		this.drawerButton.setAttribute('aria-expanded', String(this.drawerOpen));
++		this.drawerButton.setAttribute('aria-label', this.drawerOpen ? localize('droidlabx.drawerClose', 'Close menu') : localize('droidlabx.drawer', 'Menu'));
++
++		if (this.drawerScrim.parentElement !== this.layoutService.mainContainer) {
++			this.layoutService.mainContainer.appendChild(this.drawerScrim);
++		}
++
++		const title = this.layoutService.mainContainer.querySelector('.part.editor .editor-group-container:not(.empty) > .title');
++		const host = !this.drawerOpen && title instanceof HTMLElement ? title : this.layoutService.mainContainer;
++		if (this.drawerButton.parentElement !== host) {
++			host.insertBefore(this.drawerButton, host.firstChild);
++		}
++	}
++
++	private openExtensionsWindow(): void {
++		const root = this.layoutService.mainContainer;
++		this.drawerOpen = false;
++		root.classList.remove('dlx-drawer-open');
++		this.syncDrawerButton();
++		this.extensionsWindow = true;
++		root.classList.add('dlx-extensions-window');
++		this.layoutExtensionsWindow();
++		this.armExtensionsChrome(0);
++	}
++
++	private closeExtensionsWindow(): void {
++		const root = this.layoutService.mainContainer;
++		if (!this.extensionsWindow && !root.classList.contains('dlx-extensions-window')) {
++			return;
++		}
++		this.extensionsWindow = false;
++		root.classList.remove('dlx-extensions-window');
++		root.removeAttribute('data-dlx-extensions-tab');
++		root.querySelector('.dlx-extensions-chrome')?.remove();
++		root.querySelector('.extensions-viewlet')?.classList.remove('dlx-query-popular');
++		if (this.compact) {
++			hideRail(this.layoutService, true);
++		}
++	}
++
++	private layoutExtensionsWindow(): void {
++		if (!this.compact || !this.extensionsWindow) {
++			return;
++		}
++		const height = Math.max(1, this.layoutService.mainContainerDimension.height);
++		const width = Math.max(1, this.layoutService.mainContainerDimension.width);
++		const layout = this.layoutService as LayoutParts;
++		layout.getPart(Parts.ACTIVITYBAR_PART).layout(0, height, 0, 0);
++		layout.getPart(Parts.SIDEBAR_PART).layout(width, height, 0, 0);
++	}
++
++	private armExtensionsChrome(tries: number): void {
++		this.ensureExtensionsChrome();
++		if (this.layoutService.mainContainer.querySelector('.dlx-extensions-chrome')) {
++			this.showExtensionsTab(this.extensionsTab);
++			return;
++		}
++		if (tries < 10) {
++			mainWindow.requestAnimationFrame(() => this.armExtensionsChrome(tries + 1));
++		}
++	}
++
++	private extensionsContainer(): IExtensionsViewPaneContainer | undefined {
++		return this.paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar)?.getViewPaneContainer() as IExtensionsViewPaneContainer | undefined;
++	}
++
++	private ensureExtensionsChrome(): void {
++		const header = this.layoutService.mainContainer.querySelector('.extensions-viewlet > .header');
++		if (!(header instanceof HTMLElement) || header.querySelector('.dlx-extensions-chrome')) {
++			return;
++		}
++		const chrome = document.createElement('div');
++		chrome.className = 'dlx-extensions-chrome';
++
++		const title = document.createElement('div');
++		title.className = 'dlx-extensions-title';
++		const label = document.createElement('span');
++		label.textContent = localize('droidlabx.extensions', 'Extensions');
++		const close = document.createElement('button');
++		close.type = 'button';
++		close.className = 'dlx-extensions-close';
++		close.setAttribute('aria-label', localize('droidlabx.extensionsClose', 'Close'));
++		const icon = document.createElement('span');
++		icon.className = ThemeIcon.asClassName(Codicon.close);
++		icon.setAttribute('aria-hidden', 'true');
++		close.appendChild(icon);
++		close.addEventListener('click', (e) => {
++			e.preventDefault();
++			e.stopPropagation();
++			this.closeExtensionsWindow();
++		});
++		title.append(label, close);
++
++		const tabs = document.createElement('div');
++		tabs.className = 'dlx-extensions-tabs';
++		tabs.setAttribute('role', 'tablist');
++		const items = [
++			['installed', localize('droidlabx.extensionsInstalled', 'Installed')],
++			['search', localize('droidlabx.extensionsSearch', 'Search')],
++			['recommended', localize('droidlabx.extensionsRecommended', 'Recommended')],
++		] as const;
++		for (const [id, text] of items) {
++			const button = document.createElement('button');
++			button.type = 'button';
++			button.className = 'dlx-extensions-tab';
++			button.dataset.tab = id;
++			button.setAttribute('role', 'tab');
++			button.textContent = text;
++			button.addEventListener('click', (e) => {
++				e.preventDefault();
++				this.showExtensionsTab(id);
++			});
++			tabs.appendChild(button);
++		}
++		chrome.append(title, tabs);
++		header.insertBefore(chrome, header.firstChild);
++
++		const viewlet = header.closest('.extensions-viewlet');
++		viewlet?.addEventListener('input', () => {
++			if (this.extensionsTab !== 'search' || !(viewlet instanceof HTMLElement)) {
++				return;
++			}
++			const value = this.extensionsContainer()?.searchValue?.trim() ?? '';
++			viewlet.classList.toggle('dlx-query-popular', value === '' || value === '@popular');
++			if (!value) {
++				this.extensionsContainer()?.search('@popular');
++			}
++		});
++	}
++
++	private showExtensionsTab(tab: 'installed' | 'search' | 'recommended'): void {
++		this.extensionsTab = tab;
++		const root = this.layoutService.mainContainer;
++		root.setAttribute('data-dlx-extensions-tab', tab);
++		for (const button of root.querySelectorAll<HTMLElement>('.dlx-extensions-tab')) {
++			const on = button.dataset.tab === tab;
++			button.classList.toggle('active', on);
++			button.setAttribute('aria-selected', String(on));
++		}
++		const container = this.extensionsContainer();
++		const current = container?.searchValue?.trim() ?? '';
++		let query = '@installed';
++		if (tab === 'recommended') {
++			query = '@recommended';
++		} else if (tab === 'search') {
++			query = !current || current === '@installed' || current === '@recommended' || current === '@popular' ? '@popular' : current;
++		}
++		root.querySelector('.extensions-viewlet')?.classList.toggle('dlx-query-popular', query === '@popular');
++		const applyQuery = () => {
++			const latest = this.extensionsContainer();
++			const value = latest?.searchValue?.trim() ?? '';
++			if (value !== query) {
++				latest?.search(query);
++			} else {
++				void latest?.refresh();
++			}
++		};
++		this.layoutExtensionsWindow();
++		applyQuery();
++		mainWindow.requestAnimationFrame(() => {
++			if (!this.extensionsWindow) {
++				return;
++			}
++			this.layoutExtensionsWindow();
++			applyQuery();
++		});
++	}
++
++	private syncExitButton(): void {
++		const activitybar = this.layoutService.getContainer(mainWindow, Parts.ACTIVITYBAR_PART)
++			?? this.layoutService.mainContainer.querySelector('.part.activitybar > .content');
++		if (!(activitybar instanceof HTMLElement)) {
++			this.exitButton?.remove();
++			this.exitButton = undefined;
++			return;
++		}
++
++		if (!this.exitButton) {
++			const button = document.createElement('button');
++			button.type = 'button';
++			button.className = 'dlx-exit';
++			button.setAttribute('aria-label', localize('droidlabx.exit', 'Exit'));
++			const icon = document.createElement('span');
++			icon.className = ThemeIcon.asClassName(Codicon.signOut);
++			icon.setAttribute('aria-hidden', 'true');
++			button.appendChild(icon);
++			button.addEventListener('click', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++				void this.commandService.executeCommand(HOST_BACK_ID);
++			});
++			this.exitButton = button;
++		}
++
++		if (this.exitButton.parentElement !== activitybar) {
++			activitybar.appendChild(this.exitButton);
+ 		}
+ 	}
+ }
+@@ -133,9 +594,8 @@ registerAction2(class extends Action2 {
+ 		});
+ 	}
+ 
+-	run(accessor: ServicesAccessor): void {
+-		const layoutService = accessor.get(IWorkbenchLayoutService);
+-		setDrawerHidden(layoutService, layoutService.isVisible(Parts.SIDEBAR_PART));
++	run(): void {
++		shellInstance?.toggleDrawer();
+ 	}
+ });
+ 
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
+@@ -1,61 +1,1534 @@
+-/* DroidLabX: hide chrome a simple phone IDE does not need. */
++/* DroidLabX workbench chrome: phone overlay drawer, tablet rail, full-screen sheets. */
+ 
+ .monaco-workbench .command-center,
+ .monaco-workbench .command-center-center {
+ 	display: none !important;
+ }
+ 
++/* Glyphs that belong to Chat / Copilot, wherever they render. */
+ .monaco-workbench .codicon-comment-discussion,
+ .monaco-workbench .codicon-copilot,
+-.monaco-workbench .codicon-account {
++.monaco-workbench .codicon-chat-sparkle {
+ 	display: none !important;
+ }
+ 
+-.monaco-workbench .activitybar .action-item[aria-label*="Chat" i],
+-.monaco-workbench .activitybar .action-item[aria-label*="Accounts" i],
+-.monaco-workbench .activitybar .action-item[aria-label*="Source Control" i],
+-.monaco-workbench .activitybar .action-item[aria-label*="Remote Explorer" i],
+-.monaco-workbench .activitybar .action-item[aria-label*="Ports" i],
+-.monaco-workbench .activitybar .codicon-source-control-view-icon,
+-.monaco-workbench .activitybar .codicon-remote-explorer-view-icon {
++/* Icon classes, not English aria-labels, so a translated UI still hides these. */
++.monaco-workbench .activitybar .action-item:has(.codicon-source-control-view-icon),
++.monaco-workbench .activitybar .action-item:has(.codicon-chat-view-icon),
++.monaco-workbench .activitybar .action-item:has(.codicon-chat-sparkle),
++.monaco-workbench .activitybar .action-item:has(.codicon-comment-discussion),
++.monaco-workbench .activitybar .action-item:has(.codicon-copilot),
++.monaco-workbench .composite-bar .action-item:has(.codicon-source-control-view-icon),
++.monaco-workbench .composite-bar .action-item:has(.codicon-chat-view-icon),
++.monaco-workbench .composite-bar .action-item:has(.codicon-chat-sparkle),
++.monaco-workbench .composite-bar .action-item:has(.codicon-comment-discussion),
++.monaco-workbench .composite-bar .action-item:has(.codicon-copilot),
++.monaco-workbench .auxiliarybar .action-item:has(.codicon-chat-view-icon),
++.monaco-workbench .auxiliarybar .action-item:has(.codicon-chat-sparkle),
++.monaco-workbench .auxiliarybar .action-item:has(.codicon-copilot) {
+ 	display: none !important;
+ }
+ 
+-.monaco-workbench .composite-bar .action-item[aria-label*="Source Control" i],
+-.monaco-workbench .composite-bar .action-item[aria-label*="Remote Explorer" i],
+-.monaco-workbench .composite-bar .action-item[aria-label*="Chat" i],
+-.monaco-workbench .composite-bar .action-item[aria-label*="Ports" i] {
++.monaco-workbench .dlx-drawer-toggle,
++.monaco-workbench .dlx-exit,
++.monaco-workbench .dlx-sheet-close,
++.monaco-workbench .dlx-overlay-close,
++.monaco-workbench .dlx-settings-close {
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	width: 44px;
++	height: 44px;
++	margin: 0;
++	padding: 0;
++	border: 0;
++	border-radius: 8px;
++	background: transparent;
++	color: inherit;
++	cursor: pointer;
++	-webkit-user-drag: none;
++	user-select: none;
++}
++
++.monaco-workbench .dlx-drawer-toggle .codicon,
++.monaco-workbench .dlx-exit .codicon,
++.monaco-workbench .dlx-sheet-close .codicon,
++.monaco-workbench .dlx-overlay-close .codicon,
++.monaco-workbench .dlx-settings-close .codicon {
++	font-size: 22px;
++}
++
++.monaco-workbench.dlx-compact .editor-group-container > .title {
++	display: flex;
++	align-items: center;
++	box-sizing: border-box;
++	height: 72px;
++	min-height: 72px;
++	padding: 8px;
++	--editor-group-tab-height: 72px !important;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title > .label-container,
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .single-tab-and-actions-container > .label-container {
++	flex: 1;
++	height: 56px !important;
++	min-width: 0;
++	margin: 0 8px 0 0;
++	padding: 6px 12px;
++	gap: 8px;
++	border-radius: 8px;
++	background: var(--vscode-input-background);
++	border: 1px solid var(--vscode-commandCenter-inactiveBorder, var(--vscode-widget-border, rgba(128, 128, 128, 0.45)));
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .title-label {
++	padding-left: 0 !important;
++	line-height: 20px !important;
++	display: grid !important;
++	grid-template-columns: 32px minmax(0, 1fr);
++	align-items: center;
++	column-gap: 8px;
++	min-width: 0;
++	flex: 1;
++	height: 100%;
++	overflow: hidden;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .title-label::before {
++	grid-row: 1;
++	grid-column: 1;
++	align-self: center !important;
++	justify-self: center;
++	width: 28px !important;
++	height: 28px !important;
++	line-height: 28px !important;
++	padding: 0 !important;
++	background-size: 28px 28px !important;
++	background-position: center !important;
++	background-repeat: no-repeat;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .title-label > .monaco-icon-label-container {
++	grid-column: 2;
++	grid-row: 1;
++	display: flex !important;
++	flex-direction: column;
++	justify-content: center;
++	min-width: 0;
++	overflow: hidden;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .monaco-icon-description-container {
++	display: block;
++	min-width: 0;
++	width: 100%;
++	max-width: 100%;
++	margin: 0;
++	overflow: hidden;
++	white-space: nowrap;
++	text-overflow: ellipsis;
++	direction: rtl;
++	text-align: left;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .label-description {
++	display: inline;
++	margin-left: 0 !important;
++	font-size: 13px;
++	font-weight: 400;
++	line-height: 16px;
++	opacity: 0.72;
++	direction: ltr;
++	unicode-bidi: bidi-override;
++	white-space: nowrap;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .title-actions .action-item:not(:has(.codicon-toolbar-more)) {
++	display: none;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .label-name {
++	font-size: 16px !important;
++	font-weight: 600;
++	line-height: 20px !important;
++}
++
++.monaco-workbench.dlx-compact .part.editor .editor-group-container > .title .breadcrumbs-control {
++	display: none;
++}
++
++.monaco-workbench.dlx-compact > .dlx-drawer-toggle {
++	position: absolute;
++	top: 14px;
++	left: 8px;
++	z-index: 3000;
++}
++
++.monaco-workbench.dlx-compact .editor-group-container > .title > .dlx-drawer-toggle {
++	position: relative;
++	flex-shrink: 0;
++	box-sizing: border-box;
++	width: 44px;
++	height: 44px;
++	margin: 0 8px 0 0;
++	align-self: center;
++	z-index: 5;
++	background: transparent;
++	color: inherit;
++	border: 1px solid var(--vscode-commandCenter-inactiveBorder, var(--vscode-widget-border, rgba(128, 128, 128, 0.45)));
++	border-radius: 8px;
++	box-shadow: none;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .dlx-drawer-toggle {
++	position: absolute;
++	/* 48px activity-bar slot, same center as the rail icons and the sidebar title. */
++	top: 2px;
++	left: 2px;
++	z-index: 3000;
++	width: 44px;
++	height: 44px;
++	margin: 0;
++	align-self: auto;
++	background: var(--vscode-titleBar-activeBackground, var(--vscode-editor-background));
++	color: var(--vscode-titleBar-activeForeground, var(--vscode-foreground));
++	border: 1px solid var(--vscode-commandCenter-inactiveBorder, var(--vscode-widget-border, rgba(128, 128, 128, 0.45)));
++	box-shadow: none;
++}
++
++.monaco-workbench .dlx-drawer-scrim {
++	display: none;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .dlx-drawer-scrim {
++	display: block;
++	position: fixed;
++	inset: 0;
++	z-index: 2550;
++	margin: 0;
++	padding: 0;
++	border: 0;
++	border-radius: 0;
++	width: auto;
++	height: auto;
++	background: rgba(0, 0, 0, 0.45);
++	cursor: pointer;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .split-view-view:has(> .part.sidebar),
++.monaco-workbench.dlx-compact.dlx-drawer-open .split-view-view:has(> .part.activitybar) {
++	display: block !important;
++	width: 0 !important;
++	min-width: 0 !important;
++	max-width: 0 !important;
++	overflow: visible !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .split-view-container:has(> .split-view-view > .part.sidebar) > .monaco-sash,
++.monaco-workbench.dlx-compact.dlx-drawer-open .split-view-container:has(> .split-view-view > .part.activitybar) > .monaco-sash {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open.nosidebar > .part.sidebar,
++.monaco-workbench.dlx-compact.dlx-drawer-open.noactivitybar > .part.activitybar {
++	display: flex !important;
++	visibility: visible !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .part.activitybar,
++.monaco-workbench.dlx-compact.dlx-drawer-open .part.sidebar {
++	position: fixed !important;
++	top: 0 !important;
++	bottom: 0 !important;
++	height: 100% !important;
++	pointer-events: auto;
++	z-index: 2600;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .part.activitybar {
++	left: 0 !important;
++	width: 48px !important;
++	z-index: 2610;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .part.sidebar {
++	left: 48px !important;
++	width: min(82vw, 280px) !important;
++	box-shadow: 8px 0 24px rgba(0, 0, 0, 0.35);
++}
++
++.monaco-workbench.dlx-compact.dlx-extensions-window .split-view-view:has(> .part.sidebar),
++.monaco-workbench.dlx-compact.dlx-extensions-window .split-view-view:has(> .part.activitybar) {
++	display: block !important;
++	width: 0 !important;
++	min-width: 0 !important;
++	max-width: 0 !important;
++	overflow: visible !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-extensions-window .split-view-container:has(> .split-view-view > .part.sidebar) > .monaco-sash,
++.monaco-workbench.dlx-compact.dlx-extensions-window .split-view-container:has(> .split-view-view > .part.activitybar) > .monaco-sash {
+ 	display: none !important;
+ }
+ 
+-.monaco-workbench .statusbar-item[id*="git"],
+-.monaco-workbench .statusbar-item[id*="scm"],
+-.monaco-workbench .statusbar-item[id="status.scm"],
+-.monaco-workbench .statusbar-item[id*="status.remote"],
+-.monaco-workbench .statusbar-item[id="status.host"] {
++.monaco-workbench.dlx-compact.dlx-extensions-window.nosidebar > .part.sidebar {
++	display: flex !important;
++	visibility: visible !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-extensions-window .part.activitybar {
+ 	display: none !important;
+ }
+ 
+-.monaco-workbench.dlx-compact .dlx-drawer-toggle {
+-	position: absolute;
++.monaco-workbench.dlx-compact.dlx-extensions-window .part.sidebar {
++	position: fixed !important;
++	inset: 0 !important;
++	width: 100% !important;
++	height: 100% !important;
++	z-index: 2600;
++}
++
++.monaco-workbench.dlx-extensions-window .part.sidebar > .title,
++.monaco-workbench.dlx-extensions-window .part.sidebar > .composite.title {
++	display: none !important;
++}
++
++.dlx-extensions-chrome {
++	display: none;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-chrome {
++	display: flex;
++	flex-direction: column;
++	flex-shrink: 0;
++	padding: 8px 12px 0;
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-title {
++	display: flex;
++	align-items: center;
++	width: 100%;
++	min-height: 44px;
++	font-size: 20px;
++	font-weight: 600;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-title > span {
++	flex: 1;
++	min-width: 0;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-close {
++	flex: 0 0 44px;
++	width: 44px;
++	height: 44px;
++	margin-left: auto;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	padding: 0;
++	border: 0;
++	border-radius: 8px;
++	background: transparent;
++	color: var(--vscode-foreground);
++	font-size: 22px;
++	cursor: pointer;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-tabs {
++	display: flex;
++	gap: 6px;
++	min-height: 44px;
++	padding-bottom: 8px;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-tab {
++	flex: 1;
++	min-height: 40px;
++	border: 0;
++	border-radius: 8px;
++	background: transparent;
++	color: var(--vscode-foreground);
++	font-size: 14px;
++	cursor: pointer;
++}
++
++.monaco-workbench.dlx-extensions-window .dlx-extensions-tab.active {
++	background: var(--vscode-button-background);
++	color: var(--vscode-button-foreground);
++}
++
++.monaco-workbench.dlx-extensions-window .extensions-viewlet .pane-header,
++.monaco-workbench.dlx-extensions-window .extensions-viewlet .extension-view-header {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-extensions-window .extensions-viewlet:has(.monaco-list-row) .split-view-view:not(:has(.monaco-list-row)) {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-extensions-window .extensions-viewlet.dlx-query-popular .monaco-editor .view-lines {
++	opacity: 0;
++}
++
++.monaco-workbench.dlx-extensions-window .extensions-viewlet.dlx-query-popular .suggest-input-placeholder {
++	visibility: visible !important;
++	opacity: 1 !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .part.activitybar > .content {
++	padding-top: 72px;
++}
++
++.monaco-workbench .part.activitybar > .content {
++	display: flex;
++	flex-direction: column;
++}
++
++.monaco-workbench .part.activitybar .dlx-exit {
++	margin-top: auto;
++	flex-shrink: 0;
++	color: var(--vscode-activityBar-foreground, var(--vscode-foreground));
++}
++
++.monaco-workbench .activitybar .action-item {
++	min-width: 44px;
++	min-height: 44px;
++}
++
++.monaco-workbench .part.statusbar {
++	padding-bottom: env(safe-area-inset-bottom, 0px);
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-compact .part.statusbar {
++	height: calc(36px + env(safe-area-inset-bottom, 0px)) !important;
++	overflow: hidden;
++}
++
++.monaco-workbench.dlx-compact .statusbar {
++	height: 36px !important;
++	font-size: 13px;
++}
++
++.monaco-workbench.dlx-compact .part.statusbar > .items-container > .statusbar-item {
++	line-height: 36px;
++}
++
++.monaco-workbench.dlx-compact .part.statusbar > .right-items {
++	flex-wrap: nowrap;
++}
++
++.monaco-workbench.dlx-compact .statusbar-item:not([id="status.editor.mode"]):not([id="status.problems"]) {
++	display: none !important;
++}
++
++.monaco-workbench .dlx-settings-close {
++	display: none;
++}
++
++.monaco-workbench.dlx-compact .dlx-settings-close {
++	display: flex;
++}
++
++.monaco-workbench.dlx-compact .part.titlebar,
++.monaco-workbench.dlx-compact .menubar {
++	display: none !important;
++}
++
++.monaco-workbench .part.sidebar > .composite.title {
++	flex-wrap: wrap;
++	align-items: center;
++	height: 96px;
++	min-height: 96px;
++	box-sizing: border-box;
++}
++
++.monaco-workbench .part.sidebar > .title > .title-label {
++	flex: 1 1 auto;
++	min-width: 0;
++	line-height: 48px;
++}
++
++.monaco-workbench .part.sidebar > .composite.title > .title-label {
++	padding-left: 8px;
++}
++
++.monaco-workbench .part.sidebar > .composite.title > .title-label h2 {
++	font-size: 13px;
++}
++
++.monaco-workbench .part.sidebar > .composite.title > .title-actions {
++	flex: 1 0 100% !important;
++	display: flex;
++	align-items: center;
++	width: 100% !important;
++	min-width: 100% !important;
++	max-width: 100% !important;
++	height: 48px !important;
++	margin: 0;
++	padding: 0 4px !important;
++	box-sizing: border-box;
++}
++
++.monaco-workbench .part.sidebar .title-actions .monaco-toolbar,
++.monaco-workbench .part.sidebar .title-actions .monaco-action-bar,
++.monaco-workbench .part.sidebar .title-actions .actions-container {
++	display: flex;
++	align-items: center;
++	justify-content: space-evenly !important;
++	flex: 1 1 auto;
++	width: 100% !important;
++	min-width: 0 !important;
++	max-width: 100% !important;
++	height: 44px;
++	margin: 0;
++	gap: 0;
++	box-sizing: border-box;
++	overflow-x: auto;
++	scrollbar-width: none;
++}
++
++.monaco-workbench .part.sidebar .title-actions .monaco-toolbar::-webkit-scrollbar,
++.monaco-workbench .part.sidebar .title-actions .monaco-action-bar::-webkit-scrollbar,
++.monaco-workbench .part.sidebar .title-actions .actions-container::-webkit-scrollbar {
++	display: none;
++}
++
++.monaco-workbench .part.sidebar .title-actions .action-item:not(.start-debug-action-item) {
++	margin: 0 !important;
++	flex: 0 0 44px;
++	width: 44px;
++	max-width: 44px;
++	min-width: 44px;
++	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .part.sidebar .title-actions .monaco-action-bar .action-item:not(.start-debug-action-item) .action-label,
++.monaco-workbench .part.sidebar .title-actions .monaco-action-bar .action-item:not(.start-debug-action-item) .codicon,
++.monaco-workbench .part.sidebar .title-actions .monaco-action-bar .action-item:not(.start-debug-action-item) .action-label.codicon {
++	box-sizing: border-box;
++	width: 100%;
++	height: 44px;
++	padding: 0;
++	margin: 0;
++	font-size: 22px;
++	line-height: 1;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .part.sidebar .title-actions .action-item:not(.start-debug-action-item) .action-label.codicon::before {
++	display: block;
++	width: auto;
++	height: auto;
++	font-size: 22px;
++	line-height: 22px;
++	text-align: center;
++}
++
++.monaco-workbench .part.sidebar .title-actions .monaco-action-bar .action-label:active {
++	transform: scale(0.94);
++	background: var(--vscode-toolbar-hoverBackground);
++}
++
++.monaco-workbench .part.sidebar .title-actions .action-item > .monaco-dropdown,
++.monaco-workbench .part.sidebar .title-actions .codicon-toolbar-more {
++	display: none !important;
++}
++
++.monaco-workbench .part.sidebar > .composite.title:not(:has(.start-debug-action-item)):not(:has(.action-label:not(.codicon-toolbar-more))) > .title-actions {
++	display: none !important;
++	height: 0 !important;
++	min-width: 0 !important;
++	flex: 0 0 0 !important;
++	padding: 0 !important;
++}
++
++.monaco-workbench .part.sidebar .title-actions .start-debug-action-item {
++	flex: 1 1 auto !important;
++	width: auto !important;
++	max-width: 100% !important;
++	min-width: 0 !important;
++	height: 44px;
++	margin: 0 !important;
++	display: flex;
++	align-items: center;
++	gap: 8px;
++}
++
++.monaco-workbench .part.sidebar .title-actions .start-debug-action-item .codicon-debug-start {
++	flex: 0 0 44px;
++	width: 44px !important;
++	height: 44px !important;
++	margin: 0 !important;
++	padding: 0 !important;
++	font-size: 22px;
++	line-height: 22px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	border-radius: 8px;
++}
++
++.monaco-workbench .part.sidebar .title-actions .start-debug-action-item .configuration {
++	flex: 1 1 auto;
++	min-width: 0;
++	height: 44px;
++}
++
++.monaco-workbench .part.sidebar .title-actions .start-debug-action-item .configuration .monaco-dropdown,
++.monaco-workbench .part.sidebar .title-actions .start-debug-action-item .configuration .dropdown-label {
++	display: flex !important;
++	align-items: center;
++	height: 44px;
++	min-width: 0;
++	flex: 1 1 auto;
++}
++
++.monaco-workbench .part.sidebar .title-actions .start-debug-action-item .start-debug-action-item-label {
++	font-size: 16px;
++	line-height: 24px;
++}
++
++.monaco-workbench .monaco-pane-view {
++	--pane-header-size: 44px;
++}
++
++.monaco-workbench .monaco-pane-view .pane > .pane-header {
++	font-size: 13px;
++}
++
++.monaco-workbench .monaco-pane-view .pane > .pane-header.expanded > .actions {
++	display: flex;
++	align-items: center;
++}
++
++.monaco-workbench .monaco-pane-view .pane > .pane-header > .actions .action-item,
++.monaco-workbench .monaco-pane-view .pane > .pane-header > .actions .action-label {
++	width: 44px;
++	height: 44px;
++}
++
++.monaco-workbench .explorer-folders-view {
++	--file-icon-mask-size: 22px;
++	--file-icon-mask-position: center;
++}
++
++.monaco-workbench .explorer-folders-view .explorer-item,
++.monaco-workbench .explorer-folders-view .editor-group {
++	height: 44px;
++	line-height: 22px;
++	align-items: center;
++}
++
++.monaco-workbench .explorer-folders-view .monaco-icon-label {
++	align-items: center;
++}
++
++.monaco-workbench .explorer-folders-view .explorer-item.explorer-item-edited {
++	align-items: center;
++}
++
++.monaco-workbench .explorer-folders-view .explorer-item .monaco-inputbox {
++	height: 36px;
++	min-height: 36px;
++	flex: 1;
++	background: var(--vscode-input-background);
++	color: var(--vscode-input-foreground);
++	border: 1px solid var(--vscode-focusBorder);
++	border-radius: 8px;
++}
++
++.monaco-workbench .explorer-folders-view .explorer-item .monaco-inputbox > .ibwrapper,
++.monaco-workbench .explorer-folders-view .explorer-item .monaco-inputbox > .ibwrapper > .input,
++.monaco-workbench .explorer-folders-view .explorer-item .monaco-inputbox input[type="text"] {
++	height: 36px;
++	min-height: 36px;
++	line-height: 36px;
++	font-size: 16px;
++	padding: 0 10px;
++	outline: none;
++}
++
++.monaco-workbench .explorer-folders-view .monaco-tl-twistie {
++	width: 22px;
++	padding-right: 0;
++	transform: none;
++	font-size: 16px;
++}
++
++.monaco-workbench .explorer-folders-view .monaco-tl-indent {
++	/* 8px default indent + half of the 22px twistie, so the guide hits the chevron. */
++	left: 19px;
++}
++
++.monaco-workbench .explorer-folders-view .monaco-tl-indent > .indent-guide {
++	opacity: 1;
++	border-left-color: var(--vscode-tree-indentGuidesStroke);
++}
++
++.monaco-workbench .explorer-folders-view .monaco-icon-label::before {
++	width: 22px;
++	height: 22px;
++	background-size: 22px;
++	background-position: center;
++	padding-right: 8px;
++	line-height: 22px !important;
++}
++
++.monaco-workbench .explorer-folders-view .monaco-icon-label-iconpath {
++	width: 22px;
++	height: 22px;
++	margin-right: 8px;
++}
++
++.monaco-workbench .explorer-folders-view .predefined-file-icon[class*="codicon-"]::before {
++	width: 22px;
++	padding-left: 0;
++	padding-right: 8px;
++}
++
++.monaco-workbench .activitybar .action-label {
++	width: 48px;
++	height: 48px;
++	font-size: 24px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .activitybar .action-item:active .action-label {
++	transform: scale(0.94);
++}
++
++.monaco-workbench.dlx-compact .editor-group-container > .title .tab .monaco-icon-label {
++	min-height: 44px;
++}
++
++.monaco-workbench.dlx-compact .editor-group-container > .title .tab .action-label.codicon-close {
++	width: 28px;
++	height: 28px;
++	font-size: 16px;
++}
++
++.monaco-workbench .search-view .search-widgets-container {
++	margin: 0 8px 0 4px;
++	padding-top: 8px;
++	padding-bottom: 8px;
++}
++
++.monaco-workbench .search-view .search-widget .toggle-replace-button {
++	width: 44px;
++	height: 44px;
++	font-size: 18px;
++}
++
++.monaco-workbench .search-view .search-widget .search-container,
++.monaco-workbench .search-view .search-widget .replace-container,
++.monaco-workbench .search-view .query-details {
++	margin-left: 48px;
++}
++
++.monaco-workbench .search-view .monaco-findInput,
++.monaco-workbench .search-view .search-widget .replace-input {
++	display: flex;
++	flex-direction: column;
++	width: 100% !important;
++}
++
++.monaco-workbench .search-view .monaco-findInput .monaco-inputbox,
++.monaco-workbench .search-view .search-widget .replace-input > .monaco-inputbox,
++.monaco-workbench .search-view .query-details .file-types > .monaco-inputbox {
++	width: 100% !important;
++}
++
++.monaco-workbench .search-view .monaco-inputbox {
++	border-radius: 8px;
++}
++
++.monaco-workbench .search-view .search-widget .monaco-inputbox > .ibwrapper > textarea.input,
++.monaco-workbench .search-view .query-details .file-types > .monaco-inputbox,
++.monaco-workbench .search-view .query-details .monaco-inputbox .input {
++	box-sizing: border-box;
++	width: 100% !important;
++	min-height: 44px;
++	height: 44px !important;
++	font-size: 16px;
++	line-height: 24px;
++	padding: 8px 12px;
++}
++
++.monaco-workbench .search-view .monaco-findInput > .controls,
++.monaco-workbench .search-view .search-widget .replace-input > .controls,
++.monaco-workbench .search-view .query-details .controls {
++	position: static;
++	display: flex;
++	flex-wrap: nowrap;
++	align-items: center;
++	justify-content: flex-start;
++	gap: 8px;
++	width: 100%;
++	height: 44px;
++	margin-top: 4px;
++	top: auto;
++	right: auto;
++}
++
++.monaco-workbench .search-view .monaco-custom-toggle {
++	float: none;
++	box-sizing: border-box;
++	flex: 0 0 44px;
++	width: 44px;
++	height: 44px;
++	margin: 0;
++	padding: 0;
++	font-size: 18px;
++	line-height: 1;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .search-view .monaco-custom-toggle::before {
++	display: block;
++	width: auto;
++	height: auto;
++	font-size: 16px;
++	line-height: 16px;
++	text-align: center;
++}
++
++.monaco-workbench .search-view .search-widget .replace-container {
++	display: block;
++	width: auto;
++}
++
++.monaco-workbench .search-view .search-widget .replace-container .monaco-action-bar {
++	height: 44px;
++	margin: 4px 0 0;
++}
++
++.monaco-workbench .search-view .search-widget .replace-container .monaco-action-bar .action-label {
++	width: 44px;
++	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	font-size: 18px;
++}
++
++.monaco-workbench .search-view .query-details .more {
++	width: 44px;
++	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	font-size: 18px;
++}
++
++.monaco-workbench .search-view .query-details .more::before,
++.monaco-workbench .search-view .search-widget .replace-container .monaco-action-bar .action-label::before {
++	display: block;
++	width: auto;
++	height: auto;
++	font-size: 16px;
++	line-height: 16px;
++	text-align: center;
++}
++
++.monaco-workbench .search-view .query-details.more h4 {
++	font-size: 13px;
++	padding-top: 8px;
++}
++
++.monaco-workbench .search-view .foldermatch,
++.monaco-workbench .search-view .filematch,
++.monaco-workbench .search-view .linematch,
++.monaco-workbench .search-view .textsearchresult {
++	align-items: center;
++	line-height: 22px;
++}
++
++.monaco-workbench .search-view .monaco-icon-label {
++	align-items: center;
++}
++
++.monaco-workbench .search-view .monaco-tl-twistie {
++	width: 22px;
++	padding-right: 0;
++	transform: none;
++	font-size: 16px;
++}
++
++.monaco-workbench .search-view .monaco-tl-indent {
++	left: 22px;
++}
++
++.monaco-workbench .search-view .monaco-icon-label::before {
++	width: 22px;
++	height: 22px;
++	background-size: 22px;
++	background-position: center;
++	padding-right: 8px;
++	line-height: 22px !important;
++}
++
++.monaco-workbench .search-view .monaco-list .monaco-list-row .monaco-action-bar {
++	align-items: center;
++	padding: 0 4px;
++}
++
++.monaco-workbench .search-view .monaco-list .monaco-list-row:hover:not(.highlighted) .monaco-action-bar,
++.monaco-workbench .search-view .monaco-list .monaco-list-row.selected .monaco-action-bar,
++.monaco-workbench .search-view .monaco-list .monaco-list-row.focused .monaco-action-bar {
++	display: flex;
++}
++
++.monaco-workbench .search-view .monaco-list .monaco-list-row .monaco-action-bar .action-label {
++	width: 36px;
++	height: 36px;
++	padding: 0;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	font-size: 16px;
++}
++
++.monaco-workbench .debug-viewlet .welcome-view-content {
++	align-items: stretch;
++	padding: 8px 12px 16px;
++}
++
++.monaco-workbench .debug-viewlet .welcome-view-content > p {
++	font-size: 16px;
++	line-height: 24px;
++}
++
++.monaco-workbench .debug-viewlet .welcome-view-content .monaco-link {
++	display: inline-flex;
++	align-items: center;
++	min-height: 44px;
++	font-size: 16px;
++	line-height: 24px;
++}
++
++.monaco-workbench .debug-viewlet .welcome-view-content > .button-container,
++.monaco-workbench .debug-viewlet .welcome-view-content > .button-container > .monaco-button {
++	max-width: none;
++	width: 100%;
++}
++
++.monaco-workbench .debug-viewlet .welcome-view-content > .button-container > .monaco-button {
++	box-sizing: border-box;
++	min-height: 44px;
++	height: 44px;
++	padding: 8px 12px;
++	font-size: 16px;
++	line-height: 24px;
++	border-radius: 8px;
++}
++
++.monaco-workbench .debug-pane .monaco-list-row {
++	line-height: 22px;
++	align-items: center;
++}
++
++.monaco-workbench .debug-pane .monaco-icon-label {
++	align-items: center;
++}
++
++.monaco-workbench .debug-pane .monaco-tl-twistie {
++	width: 22px;
++	padding-right: 0;
++	transform: none;
++	font-size: 16px;
++}
++
++.monaco-workbench .debug-pane .monaco-icon-label::before {
++	width: 22px;
++	height: 22px;
++	background-size: 22px;
++	background-position: center;
++	padding-right: 8px;
++	line-height: 22px !important;
++}
++
++.monaco-workbench .debug-pane .monaco-list-row .expression .value {
++	height: auto;
++	line-height: 22px;
++}
++
++.monaco-workbench .debug-pane .debug-breakpoints .breakpoint {
++	margin-left: 0;
++	align-items: center;
++}
++
++.monaco-workbench .debug-pane .debug-breakpoints .breakpoint .monaco-custom-toggle.monaco-checkbox {
++	width: 22px;
++	min-width: 22px;
++	max-width: 22px;
++	height: 22px;
++}
++
++.monaco-workbench .debug-pane .monaco-inputbox > .ibwrapper,
++.monaco-workbench .debug-pane .monaco-inputbox > .ibwrapper > .input {
++	height: 36px;
++	min-height: 36px;
++	font-size: 16px;
++	line-height: 36px;
++	padding: 0 10px;
++}
++
++.monaco-workbench .debug-toolbar {
++	height: 48px;
++	align-items: center;
++	padding: 0 4px;
++}
++
++.monaco-workbench .debug-toolbar .monaco-action-bar .action-item {
++	margin: 0;
++	width: 44px;
++	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .debug-toolbar .monaco-action-bar .action-item .action-label {
++	width: 44px;
++	height: 44px;
++	margin: 0;
++	font-size: 22px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++/* Find / Replace. Phone: full editor width, toggles on their own row. Tablet: corner widget, 44px controls. */
++.monaco-workbench .monaco-editor .find-widget .monaco-inputbox,
++.monaco-workbench .monaco-editor .find-widget .monaco-inputbox > .ibwrapper,
++.monaco-workbench .monaco-editor .find-widget .monaco-inputbox > .ibwrapper > .input,
++.monaco-workbench .monaco-editor .find-widget textarea.input {
++	min-height: 44px !important;
++	height: 44px !important;
++	line-height: 44px;
++	font-size: 16px;
++}
++
++.monaco-workbench .monaco-editor .find-widget .button,
++.monaco-workbench .monaco-editor .find-widget .find-actions,
++.monaco-workbench .monaco-editor .find-widget .replace-actions {
++	height: 44px;
++	min-height: 44px;
++}
++
++.monaco-workbench .monaco-editor .find-widget .button {
++	width: 44px;
++	min-width: 44px;
++	margin-left: 0;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-editor .find-widget {
++	height: auto;
++	min-height: 52px;
++	overflow: visible;
++}
++
++.monaco-workbench.dlx-compact .monaco-editor .find-widget {
++	left: 0 !important;
++	width: 100% !important;
++	max-width: none !important;
++	height: auto !important;
++	min-height: 0;
++	overflow: visible;
++	margin-top: 0;
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-compact .monaco-editor .find-widget > .find-part,
++.monaco-workbench.dlx-compact .monaco-editor .find-widget > .replace-part {
++	flex-wrap: wrap;
++	height: auto;
++	margin: 4px 8px 4px 48px;
++}
++
++.monaco-workbench.dlx-compact .monaco-editor .find-widget .monaco-findInput {
++	flex: 1 1 100%;
++	min-width: 0;
++}
++
++.monaco-workbench.dlx-compact .monaco-editor .find-widget .button.toggle {
+ 	top: 4px;
+ 	left: 4px;
+-	z-index: 3000;
++	width: 44px;
++	height: 44px;
++}
++
++.monaco-workbench.dlx-compact .monaco-editor .find-widget .monaco-findInput > .controls,
++.monaco-workbench.dlx-compact .monaco-editor .find-widget .replace-input > .controls {
++	position: static;
+ 	display: flex;
++	flex-wrap: nowrap;
+ 	align-items: center;
+-	justify-content: center;
++	width: 100%;
++	height: 44px;
++	margin-top: 4px;
++	top: auto;
++	right: auto;
++}
++
++.monaco-workbench.dlx-compact .monaco-editor .find-widget .find-actions,
++.monaco-workbench.dlx-compact .monaco-editor .find-widget .replace-actions {
++	width: 100%;
++	justify-content: flex-end;
++}
++
++.monaco-menu .monaco-action-bar.vertical .action-menu-item {
++	height: 44px !important;
++	min-height: 44px;
++}
++
++.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-toolbar-container {
++	display: flex !important;
++	align-items: center;
++	height: 44px;
++}
++
++.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-toolbar-container .action-item,
++.monaco-workbench .notifications-list-container .notification-list-item .notification-list-item-toolbar-container .action-label {
+ 	width: 44px;
+ 	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench:not(.dlx-compact) > .notifications-toasts.top-right {
++	top: 8px;
++}
++
++.monaco-workbench.dlx-compact > .notifications-toasts {
++	left: 0 !important;
++	right: 0 !important;
++	top: auto !important;
++	bottom: calc(36px + env(safe-area-inset-bottom, 0px)) !important;
++	width: 100% !important;
++	max-width: none !important;
++}
++
++.monaco-workbench.dlx-compact > .notifications-toasts .notification-toast-container,
++.monaco-workbench.dlx-compact > .notifications-toasts .notification-toast {
++	width: 100% !important;
++	max-width: none !important;
++}
++
++.monaco-workbench .part.panel > .title .action-item,
++.monaco-workbench .part.panel > .composite.title .action-item,
++.monaco-workbench .part.panel .composite-bar .action-item.icon {
++	height: 44px;
++	min-height: 44px;
++	min-width: 44px;
++}
++
++.monaco-workbench .dlx-panel-scrim {
++	display: none;
++}
++
++.monaco-workbench.dlx-compact.dlx-panel-open .dlx-panel-scrim {
++	display: block;
++	position: fixed;
++	inset: 0;
++	z-index: 2400;
+ 	margin: 0;
+ 	padding: 0;
+ 	border: 0;
+-	border-radius: 8px;
+-	background: var(--vscode-titleBar-activeBackground, var(--vscode-editor-background));
+-	color: var(--vscode-titleBar-activeForeground, var(--vscode-foreground));
+-	box-shadow: 0 0 0 1px var(--vscode-widget-border, transparent);
++	width: auto;
++	height: auto;
++	background: rgba(0, 0, 0, 0.45);
+ 	cursor: pointer;
+ }
+ 
+-.monaco-workbench.dlx-compact .dlx-drawer-toggle .codicon {
+-	font-size: 20px;
++.monaco-workbench.dlx-compact.dlx-panel-open .split-view-view:has(> .part.panel) {
++	height: 0 !important;
++	min-height: 0 !important;
++	max-height: 0 !important;
++	overflow: visible !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-panel-open .split-view-container:has(> .split-view-view > .part.panel) > .monaco-sash {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-compact.dlx-panel-open .part.panel {
++	display: flex !important;
++	visibility: visible !important;
++	position: fixed !important;
++	left: 0 !important;
++	right: 0 !important;
++	width: 100% !important;
++	bottom: calc(36px + env(safe-area-inset-bottom, 0px));
++	height: 50vh !important;
++	z-index: 2450;
++	box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
++}
++
++.monaco-workbench.dlx-compact.dlx-panel-open .part.panel > .composite.title,
++.monaco-workbench.dlx-compact.dlx-panel-open .part.panel > .title {
++	position: relative;
++	min-height: 44px;
++	padding-right: 48px;
++}
++
++.monaco-workbench.dlx-compact.dlx-panel-open .part.panel .dlx-panel-close {
++	position: absolute;
++	top: 0;
++	right: 4px;
++	z-index: 2;
++}
++
++/* Extensions list and editor. Sidebar is narrow on the phone drawer and on the tablet rail. */
++.monaco-workbench .extensions-viewlet .suggest-input-container {
++	min-height: 44px;
++	box-sizing: border-box;
++	display: flex;
++	align-items: center;
++}
++
++.monaco-workbench .extensions-viewlet .suggest-input-placeholder {
++	font-size: 16px;
++}
++
++.monaco-workbench .extensions-viewlet .extensions-search-actions-container {
++	height: 44px;
++}
++
++.monaco-workbench .extensions-viewlet .extensions-search-actions-container .action-item,
++.monaco-workbench .extensions-viewlet .extensions-search-actions-container .action-label {
++	width: 44px;
++	height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	font-size: 18px;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item {
++	align-items: flex-start;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item > .icon-container {
++	padding-top: 10px;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item > .details {
++	justify-content: flex-start;
++	padding-top: 8px;
++	min-width: 0;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item > .details > .footer {
++	flex-wrap: nowrap;
++	align-items: center;
++	justify-content: flex-start;
++	height: auto;
++	min-height: 0;
++	overflow: visible;
++	padding-right: 8px;
++	gap: 8px;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item > .details > .footer > .publisher-container {
++	flex: 1 1 auto;
++	line-height: 20px;
++	min-width: 0;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item > .details > .footer > .monaco-action-bar {
++	flex: 0 0 auto;
++	width: auto;
++	min-width: auto;
++	max-width: none;
++	margin: 0 0 0 auto;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .monaco-action-bar .actions-container {
++	width: auto;
++	flex-wrap: nowrap;
++	justify-content: flex-end;
++}
++
++/* Disabled actions stay in the DOM with a hidden label. They must not share the row. */
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-item.disabled:not(:has(> .action-label.installing)):not(:has(> .action-label.uninstalling)),
++.monaco-workbench .extension-editor .actions-status-container .action-item.disabled:not(.checkbox-action-item):not(:has(> .action-label.installing)):not(:has(> .action-label.uninstalling)):not(:has(> .action-label.extension-status)):not(:has(> .action-label.extension-status-label)) {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-item:not(.disabled):not(.hide),
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-item.disabled:has(> .action-label.installing),
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-item.disabled:has(> .action-label.uninstalling) {
++	display: flex;
++	align-items: stretch;
++	flex: 0 0 auto;
++	width: auto;
++	max-width: 100%;
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .action-item.hide,
++.monaco-workbench .extension-editor .action-item.hide,
++.monaco-workbench.dlx-extensions-window .extension-list-item .action-item:has(> .action-label.hide),
++.monaco-workbench .extension-editor .action-item:has(> .action-label.hide) {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-item:has(> .action-label.icon) {
++	flex: 0 0 36px !important;
++	width: 36px !important;
++	max-width: 36px !important;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-label.extension-action.label {
++	flex: 0 0 auto;
++	min-width: auto;
++	width: auto;
++	max-width: none !important;
++	min-height: 36px;
++	height: 36px;
++	line-height: 34px !important;
++	font-size: 13px;
++	padding: 0 12px;
++	box-sizing: border-box;
++	text-align: center;
++	overflow: hidden;
++	text-overflow: ellipsis;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .monaco-dropdown {
++	flex: 0 0 36px;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .monaco-dropdown .action-label.extension-action.label {
++	flex: 0 0 36px;
++	width: 36px;
++	min-width: 36px;
++	max-width: 36px !important;
++	padding: 0;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-dropdown-item-separator {
++	height: 36px !important;
++	margin-top: 0;
++	display: flex;
++	align-items: center;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-dropdown-item-separator > div {
++	height: 20px !important;
++}
++
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-label.icon,
++.monaco-workbench.dlx-extensions-window .extension-list-item .footer .action-label.codicon:not(.label) {
++	width: 36px !important;
++	height: 36px !important;
++	font-size: 18px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .extension-editor > .body > .navbar {
++	height: 44px;
++	line-height: 44px;
++	overflow-x: auto;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .body > .navbar {
++	padding-left: 8px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .body > .navbar .actions-container {
++	width: max-content;
++	flex-wrap: nowrap;
++}
++
++.monaco-workbench .extension-editor > .body > .navbar .action-label {
++	font-size: 14px;
++	line-height: 44px;
++	min-height: 44px;
++	padding: 0 14px;
++}
++
++.monaco-workbench .extension-editor .actions-status-container .action-label.extension-action.label {
++	max-width: none !important;
++	min-height: 44px;
++	height: 44px;
++	line-height: 42px !important;
++	font-size: 16px;
++	padding: 0 16px;
++	box-sizing: border-box;
++}
++
++.monaco-workbench .extension-editor .actions-status-container .action-dropdown-item-separator {
++	height: 44px !important;
++	display: flex;
++	align-items: center;
++	flex: 0 0 auto;
++}
++
++.monaco-workbench .extension-editor .actions-status-container .action-dropdown-item-separator > div {
++	height: 20px !important;
++}
++
++.monaco-workbench .extension-editor .actions-status-container .action-label.icon,
++.monaco-workbench .extension-editor .actions-status-container .action-label.codicon:not(.label) {
++	width: 44px !important;
++	height: 44px !important;
++	font-size: 22px;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++}
++
++.monaco-workbench .extension-editor .actions-status-container .checkbox-action-item,
++.monaco-workbench .extension-editor .actions-status-container .checkbox-action-item .action-label {
++	min-height: 44px;
++	display: flex;
++	align-items: center;
++	justify-content: flex-start;
++	font-size: 15px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor {
++	max-width: none;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header {
++	flex-direction: column;
++	align-items: stretch;
++	padding: 12px 16px 8px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header > .icon-container .extension-icon .icon {
++	width: 64px;
++	height: 64px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header > .icon-container > .extension-icon .codicon {
++	font-size: 64px !important;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header > .details {
++	padding-left: 0;
++	padding-top: 12px;
++	width: 100%;
++	min-width: 0;
++	overflow: visible;
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header > .details > .title {
++	display: flex;
++	flex-wrap: wrap;
++	align-items: baseline;
++	width: 100%;
++	column-gap: 8px;
++	row-gap: 2px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header > .details > .title > .name {
++	flex: 1 1 100%;
++	min-width: 0;
++	font-size: 22px;
++	line-height: 1.25;
++	white-space: normal;
++}
++
++.monaco-workbench.dlx-compact .extension-editor > .header > .details > .subtitle {
++	flex-wrap: wrap;
++	row-gap: 6px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container,
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container > .monaco-action-bar,
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .actions-container {
++	display: flex;
++	flex-direction: row;
++	flex-wrap: wrap;
++	align-items: center;
++	width: 100%;
++	max-width: none;
++	gap: 8px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .action-item:not(.disabled):not(.hide) {
++	width: auto;
++	max-width: 100%;
++	overflow: hidden;
++	margin-right: 0;
++	flex: 0 0 auto;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .action-item:not(.disabled):not(.hide):not(.checkbox-action-item):not(:has(> .action-label.icon)) {
++	display: flex;
++	align-items: stretch;
++	min-width: max-content;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .action-item.action-dropdown-item:not(.disabled):not(.hide) {
++	display: flex;
++	flex-direction: row;
++	align-items: stretch;
++	order: 1;
++	flex: 0 0 auto;
++	width: auto;
++	min-width: max-content;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .action-dropdown-item > .action-label.extension-action.label {
++	flex: 0 0 auto;
++	width: auto;
++	min-width: max-content;
++	max-width: none !important;
++	text-align: center;
++	overflow: hidden;
++	text-overflow: ellipsis;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .monaco-dropdown {
++	flex: 0 0 44px;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .monaco-dropdown .action-label {
++	width: 44px;
++	min-width: 44px;
++	padding: 0;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .action-item:has(> .action-label.icon) {
++	order: 2;
++	flex: 0 0 44px !important;
++	width: 44px !important;
++	max-width: 44px !important;
++	align-self: center;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container .checkbox-action-item {
++	order: 3;
++	flex: 1 1 100%;
++	width: auto;
++	justify-content: flex-start;
++}
++
++.monaco-workbench.dlx-compact .extension-editor .actions-status-container > .status {
++	width: 100%;
++	white-space: normal;
++	line-height: 1.35;
++	margin-top: 8px;
+ }
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/media/settingsEditor2.css
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/preferences/browser/media/settingsEditor2.css
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/media/settingsEditor2.css
+@@ -30,6 +30,55 @@
+ 	max-width: 1400px;
+ }
+ 
++.settings-editor > .settings-header > .dlx-settings-close {
++	display: none;
++}
++
++.dlx-compact .settings-editor {
++	max-width: none;
++	margin: 0;
++}
++
++.dlx-compact .settings-editor > .settings-header {
++	display: flex;
++	flex-wrap: wrap;
++	align-items: center;
++	padding: 8px 8px 0;
++	margin-top: 0;
++	max-width: none;
++}
++
++.dlx-compact .settings-editor > .settings-header > .settings-header-controls {
++	margin-top: 4px;
++}
++
++.dlx-compact .monaco-modal-editor-block .settings-editor > .settings-header > .dlx-settings-close {
++	display: none;
++}
++
++.dlx-compact .settings-editor > .settings-header > .search-container {
++	flex: 1;
++}
++
++.dlx-compact .settings-editor > .settings-header > .settings-header-controls {
++	flex: 1 0 100%;
++}
++
++.dlx-compact .settings-editor > .settings-header > .dlx-settings-close {
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	width: 44px;
++	height: 44px;
++	margin: 0 4px 0 0;
++	padding: 0;
++	border: 0;
++	border-radius: 8px;
++	background: transparent;
++	color: inherit;
++	cursor: pointer;
++}
++
+ .settings-editor > .settings-header > .search-container {
+ 	position: relative;
+ }
+@@ -69,8 +118,12 @@
+ 	visibility: hidden;
+ }
+ 
++.settings-editor > .settings-header > .settings-header-controls,
++.settings-editor .settings-tabs-widget {
++	display: none !important;
++}
++
+ .settings-editor > .settings-header > .settings-header-controls {
+-	display: flex;
+ 	flex-wrap: wrap;
+ 	border-bottom: solid 1px;
+ 	margin-top: 10px;
+@@ -300,6 +353,59 @@
+ 	display: none;
+ }
+ 
++.dlx-compact .settings-editor > .settings-body > .monaco-split-view2 {
++	margin-top: 0;
++}
++
++.dlx-compact .settings-editor > .settings-body .settings-toc-container {
++	display: none;
++}
++
++.dlx-compact .settings-editor,
++.dlx-compact .settings-editor > .settings-body,
++.dlx-compact .settings-editor > .settings-body > .monaco-split-view2,
++.dlx-compact .settings-editor > .settings-body .settings-tree-container {
++	max-width: 100%;
++	overflow-x: hidden;
++}
++
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .monaco-list-row .monaco-tl-contents {
++	width: 100%;
++	max-width: 100%;
++	margin: 0;
++	padding-left: 12px;
++	padding-right: 12px;
++	box-sizing: border-box;
++}
++
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item-contents {
++	max-width: 100%;
++	box-sizing: border-box;
++}
++
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item-contents .setting-item-description,
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item-contents .setting-item-markdown {
++	min-width: 0;
++	flex: 1 1 auto;
++	white-space: normal;
++	overflow-wrap: anywhere;
++	word-break: break-word;
++}
++
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-text .setting-item-control,
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-enum .setting-item-value > .setting-item-control > select,
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-text .setting-item-validation-message,
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-number .setting-item-value > .setting-item-control {
++	width: 100%;
++	max-width: 100%;
++	min-width: 0;
++}
++
++.dlx-compact .settings-editor > .settings-body .settings-tree-container .setting-item-contents .setting-item-markdown .monaco-tokenized-source {
++	white-space: pre-wrap;
++	overflow-wrap: anywhere;
++}
++
+ .settings-editor > .settings-body .settings-toc-container .monaco-list-row:not(.selected) {
+ 	color: var(--vscode-foreground);
+ 	opacity: 0.9;
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts
+@@ -25,6 +25,7 @@ import { Disposable, DisposableStore, di
+ import * as platform from '../../../../base/common/platform.js';
+ import { StopWatch } from '../../../../base/common/stopwatch.js';
+ import { ThemeIcon } from '../../../../base/common/themables.js';
++import { Codicon } from '../../../../base/common/codicons.js';
+ import { URI } from '../../../../base/common/uri.js';
+ import { ILanguageService } from '../../../../editor/common/languages/language.js';
+ import { ITextResourceConfigurationService } from '../../../../editor/common/services/textResourceConfiguration.js';
+@@ -292,7 +293,7 @@ export class SettingsEditor2 extends Edi
+ 	) {
+ 		super(SettingsEditor2.ID, group, telemetryService, themeService, storageService);
+ 		this.searchDelayer = this._register(new Delayer(200));
+-		this.viewState = { settingsTarget: ConfigurationTarget.USER_LOCAL };
++		this.viewState = { settingsTarget: this.unifiedSettingsTarget() };
+ 
+ 		this.settingFastUpdateDelayer = this._register(new Delayer<void>(SettingsEditor2.SETTING_UPDATE_FAST_DEBOUNCE));
+ 		this.settingSlowUpdateDelayer = this._register(new Delayer<void>(SettingsEditor2.SETTING_UPDATE_SLOW_DEBOUNCE));
+@@ -443,7 +444,14 @@ export class SettingsEditor2 extends Edi
+ 		}
+ 	}
+ 
+-	override get minimumWidth(): number { return SettingsEditor2.EDITOR_MIN_WIDTH; }
++	override get minimumWidth(): number {
++		return this.rootElement?.closest('.dlx-compact') ? 0 : SettingsEditor2.EDITOR_MIN_WIDTH;
++	}
++
++	private unifiedSettingsTarget(): ConfigurationTarget.USER_LOCAL | ConfigurationTarget.USER_REMOTE {
++		return this.environmentService.remoteAuthority ? ConfigurationTarget.USER_REMOTE : ConfigurationTarget.USER_LOCAL;
++	}
++
+ 	override get maximumWidth(): number { return Number.POSITIVE_INFINITY; }
+ 	override get minimumHeight() { return 180; }
+ 
+@@ -524,12 +532,7 @@ export class SettingsEditor2 extends Edi
+ 		this.defaultSettingsEditorModel = model;
+ 
+ 		options = options || validateSettingsEditorOptions({});
+-		if (!this.viewState.settingsTarget || !this.settingsTargetsWidget.settingsTarget) {
+-			const optionsHasViewStateTarget = options.viewState && (options.viewState as ISettingsEditorViewState).settingsTarget;
+-			if (!options.target && !optionsHasViewStateTarget) {
+-				options.target = ConfigurationTarget.USER_LOCAL;
+-			}
+-		}
++		options.target = this.unifiedSettingsTarget();
+ 		this._setOptions(options);
+ 
+ 		// Don't block setInput on render (which can trigger an async search)
+@@ -560,7 +563,7 @@ export class SettingsEditor2 extends Edi
+ 		}
+ 
+ 		if (cachedState) {
+-			const settingsTarget = cachedState.target;
++			const settingsTarget = this.unifiedSettingsTarget();
+ 			this.settingsTargetsWidget.settingsTarget = settingsTarget;
+ 			this.viewState.settingsTarget = settingsTarget;
+ 			if (!this.searchWidget.getValue()) {
+@@ -602,10 +605,7 @@ export class SettingsEditor2 extends Edi
+ 			this.viewState.query = query;
+ 		}
+ 
+-		const target: SettingsTarget | undefined = options.folderUri ?? recoveredViewState?.settingsTarget ?? <SettingsTarget | undefined>options.target;
+-		if (target) {
+-			this.settingsTargetsWidget.updateTarget(target);
+-		}
++		this.settingsTargetsWidget.updateTarget(this.unifiedSettingsTarget());
+ 	}
+ 
+ 	override clearInput(): void {
+@@ -627,7 +627,7 @@ export class SettingsEditor2 extends Edi
+ 		const monacoWidth = innerWidth - 10 - this.controlsElement.clientWidth - 12;
+ 		this.searchWidget.layout(new DOM.Dimension(monacoWidth, 20));
+ 
+-		this.rootElement.classList.toggle('narrow-width', dimension.width < SettingsEditor2.NARROW_TOTAL_WIDTH);
++		this.rootElement.classList.toggle('narrow-width', dimension.width < SettingsEditor2.NARROW_TOTAL_WIDTH || !!this.rootElement.closest('.dlx-compact'));
+ 	}
+ 
+ 	override focus(): void {
+@@ -796,6 +796,19 @@ export class SettingsEditor2 extends Edi
+ 	 */
+ 	private createHeader(parent: HTMLElement): void {
+ 		this.headerContainer = DOM.append(parent, $('.settings-header'));
++
++		const closeButton = DOM.append(this.headerContainer, $('button.dlx-settings-close'));
++		closeButton.setAttribute('type', 'button');
++		closeButton.setAttribute('aria-label', localize('droidlabx.closeSettings', "Close"));
++		const closeIcon = DOM.append(closeButton, $('span'));
++		closeIcon.className = ThemeIcon.asClassName(Codicon.close);
++		closeIcon.setAttribute('aria-hidden', 'true');
++		this._register(DOM.addDisposableListener(closeButton, DOM.EventType.CLICK, () => {
++			if (this.input) {
++				void this.group.closeEditor(this.input);
++			}
++		}));
++
+ 		this.searchContainer = DOM.append(this.headerContainer, $('.search-container'));
+ 
+ 		const clearInputAction = this._register(new Action(SETTINGS_EDITOR_COMMAND_CLEAR_SEARCH_RESULTS,
+@@ -866,15 +879,9 @@ export class SettingsEditor2 extends Edi
+ 		headerControlsContainer.style.borderColor = asCssVariable(settingsHeaderBorder);
+ 
+ 		const targetWidgetContainer = DOM.append(headerControlsContainer, $('.settings-target-container'));
+-		this.settingsTargetsWidget = this._register(this.instantiationService.createInstance(SettingsTargetsWidget, targetWidgetContainer, { enableRemoteSettings: true }));
+-		this.settingsTargetsWidget.settingsTarget = ConfigurationTarget.USER_LOCAL;
++		this.settingsTargetsWidget = this._register(this.instantiationService.createInstance(SettingsTargetsWidget, targetWidgetContainer, { enableRemoteSettings: false }));
++		this.settingsTargetsWidget.settingsTarget = this.unifiedSettingsTarget();
+ 		this._register(this.settingsTargetsWidget.onDidTargetChange(target => this.onDidSettingsTargetChange(target)));
+-		this._register(DOM.addDisposableListener(targetWidgetContainer, DOM.EventType.KEY_DOWN, e => {
+-			const event = new StandardKeyboardEvent(e);
+-			if (event.keyCode === KeyCode.DownArrow) {
+-				this.focusSettings();
+-			}
+-		}));
+ 
+ 		if (this.userDataSyncWorkbenchService.enabled && this.userDataSyncEnablementService.canToggleEnablement()) {
+ 			const syncControls = this._register(this.instantiationService.createInstance(SyncControls, this.window, headerControlsContainer));
+@@ -1084,7 +1091,7 @@ export class SettingsEditor2 extends Edi
+ 		this.splitView.addView({
+ 			onDidChange: Event.None,
+ 			element: this.settingsTreeContainer,
+-			minimumSize: SettingsEditor2.EDITOR_MIN_WIDTH,
++			minimumSize: 0,
+ 			maximumSize: Number.POSITIVE_INFINITY,
+ 			layout: (width, _, height) => {
+ 				this.settingsTreeContainer.style.width = `${width}px`;
+@@ -1209,13 +1216,7 @@ export class SettingsEditor2 extends Edi
+ 				this.applyFilter(`@${LANGUAGE_SETTING_TAG}${element.language}`);
+ 			}
+ 
+-			if (element.scope === 'workspace') {
+-				this.settingsTargetsWidget.updateTarget(ConfigurationTarget.WORKSPACE);
+-			} else if (element.scope === 'user') {
+-				this.settingsTargetsWidget.updateTarget(ConfigurationTarget.USER_LOCAL);
+-			} else if (element.scope === 'remote') {
+-				this.settingsTargetsWidget.updateTarget(ConfigurationTarget.USER_REMOTE);
+-			}
++			this.settingsTargetsWidget.updateTarget(this.unifiedSettingsTarget());
+ 			this.applyFilter(`@${ID_SETTING_TAG}${element.settingKey}`);
+ 		}));
+ 
+@@ -2239,7 +2240,8 @@ export class SettingsEditor2 extends Edi
+ 		const hideTocForSearch = tocBehavior === 'hide' && this.searchResultModel;
+ 		if (!hideTocForSearch) {
+ 			const firstViewWasVisible = this.splitView.isViewVisible(0);
+-			const firstViewVisible = this.bodyContainer.clientWidth >= SettingsEditor2.NARROW_TOTAL_WIDTH;
++			const firstViewVisible = this.bodyContainer.clientWidth >= SettingsEditor2.NARROW_TOTAL_WIDTH
++				&& !this.rootElement.closest('.dlx-compact');
+ 
+ 			this.splitView.setViewVisible(0, firstViewVisible);
+ 			// If the first view is again visible, and we have enough space, immediately set the
+@@ -2251,6 +2253,12 @@ export class SettingsEditor2 extends Edi
+ 				separatorBorder: firstViewVisible ? this.theme.getColor(settingsSashBorder)! : Color.transparent
+ 			});
+ 		}
++
++		if (this.rootElement.closest('.dlx-compact')) {
++			const width = this.bodyContainer.clientWidth;
++			this.settingsTreeContainer.style.width = `${width}px`;
++			this.settingsTree.layout(listHeight, width);
++		}
+ 	}
+ 
+ 	protected override saveState(): void {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/remote/browser/remote.contribution.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/remote/browser/remote.contribution.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/remote/browser/remote.contribution.ts
+@@ -7,12 +7,10 @@ import { localize } from '../../../../nl
+ import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
+ import { IWorkbenchContributionsRegistry, WorkbenchPhase, Extensions as WorkbenchExtensions, registerWorkbenchContribution2 } from '../../../common/contributions.js';
+ import { Registry } from '../../../../platform/registry/common/platform.js';
+-import { ShowCandidateContribution } from './showCandidate.js';
+ import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
+-import { TunnelFactoryContribution } from './tunnelFactory.js';
+ import { RemoteAgentConnectionStatusListener, RemoteMarkers } from './remote.js';
+ import { RemoteStatusIndicator } from './remoteIndicator.js';
+-import { AutomaticPortForwarding, ForwardedPortsView, PortRestore, TOGGLE_VIEW_ACTION_ID } from './remoteExplorer.js';
++import { TOGGLE_VIEW_ACTION_ID } from './remoteExplorer.js';
+ import { InitialRemoteConnectionHealthContribution } from './remoteConnectionHealth.js';
+ import { IViewsService } from '../../../services/views/common/viewsService.js';
+ import { TUNNEL_VIEW_ID } from '../../../services/remote/common/remoteExplorerService.js';
+@@ -37,12 +35,7 @@ registerAction2(class extends Action2 {
+ });
+ 
+ const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
+-registerWorkbenchContribution2(ShowCandidateContribution.ID, ShowCandidateContribution, WorkbenchPhase.BlockRestore);
+-registerWorkbenchContribution2(TunnelFactoryContribution.ID, TunnelFactoryContribution, WorkbenchPhase.BlockRestore);
+ workbenchContributionsRegistry.registerWorkbenchContribution(RemoteAgentConnectionStatusListener, LifecyclePhase.Eventually);
+ registerWorkbenchContribution2(RemoteStatusIndicator.ID, RemoteStatusIndicator, WorkbenchPhase.BlockStartup);
+-workbenchContributionsRegistry.registerWorkbenchContribution(ForwardedPortsView, LifecyclePhase.Restored);
+-workbenchContributionsRegistry.registerWorkbenchContribution(PortRestore, LifecyclePhase.Eventually);
+-workbenchContributionsRegistry.registerWorkbenchContribution(AutomaticPortForwarding, LifecyclePhase.Eventually);
+ workbenchContributionsRegistry.registerWorkbenchContribution(RemoteMarkers, LifecyclePhase.Eventually);
+ workbenchContributionsRegistry.registerWorkbenchContribution(InitialRemoteConnectionHealthContribution, LifecyclePhase.Restored);
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/remote/browser/remoteExplorer.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/remote/browser/remoteExplorer.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/remote/browser/remoteExplorer.ts
+@@ -75,13 +75,8 @@ export class ForwardedPortsView extends
+ 			content: this.environmentService.remoteAuthority ? nls.localize('remoteNoPorts', "No forwarded ports. Forward a port to access your running services locally.\n[Forward a Port]({0})", `command:${ForwardPortAction.INLINE_ID}`)
+ 				: nls.localize('noRemoteNoPorts', "No forwarded ports. Forward a port to access your locally running services over the internet.\n[Forward a Port]({0})", `command:${ForwardPortAction.INLINE_ID}`),
+ 		}));
+-		this.enableBadgeAndStatusBar();
+ 		this.enableForwardedPortsFeatures();
+-		if (!this.environmentService.remoteAuthority) {
+-			this._register(Event.once(this.tunnelService.onTunnelOpened)(() => {
+-				this.hasPortsInSession = true;
+-			}));
+-		}
++		this.enableBadgeAndStatusBar();
+ 	}
+ 
+ 	private async getViewContainer(): Promise<ViewContainer | null> {
+@@ -99,8 +94,8 @@ export class ForwardedPortsView extends
+ 	private async enableForwardedPortsFeatures() {
+ 		this.contextKeyListener.clear();
+ 
+-		const featuresEnabled: boolean = true;
+-		const viewEnabled: boolean = true;
++		const featuresEnabled: boolean = false;
++		const viewEnabled: boolean = false;
+ 
+ 		if (featuresEnabled || viewEnabled) {
+ 			// Also enable the view if it isn't already.
+@@ -124,6 +119,10 @@ export class ForwardedPortsView extends
+ 	}
+ 
+ 	private enableBadgeAndStatusBar() {
++		const enablePortsChrome = false;
++		if (!enablePortsChrome) {
++			return;
++		}
+ 		const disposable = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry).onViewsRegistered(e => {
+ 			if (e.find(view => view.views.find(viewDescriptor => viewDescriptor.id === TUNNEL_VIEW_ID))) {
+ 				this._register(Event.debounce(this.remoteExplorerService.tunnelModel.onForwardPort, (_last, e) => e, 50)(() => {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/remote/browser/remoteIndicator.ts
+@@ -10,7 +10,7 @@ import { Emitter, Event } from '../../..
+ import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
+ import { MenuId, IMenuService, MenuItemAction, MenuRegistry, registerAction2, Action2, SubmenuItemAction, IMenu } from '../../../../platform/actions/common/actions.js';
+ import { IWorkbenchContribution } from '../../../common/contributions.js';
+-import { StatusbarAlignment, IStatusbarService, IStatusbarEntryAccessor, IStatusbarEntry } from '../../../services/statusbar/browser/statusbar.js';
++import { IStatusbarService, IStatusbarEntryAccessor, IStatusbarEntry } from '../../../services/statusbar/browser/statusbar.js';
+ import { ILabelService } from '../../../../platform/label/common/label.js';
+ import { ContextKeyExpr, IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
+ import { ICommandService } from '../../../../platform/commands/common/commands.js';
+@@ -138,7 +138,7 @@ export class RemoteStatusIndicator exten
+ 	private readonly onDidChangeEntries: Event<void> = this._onDidChangeEntries.event;
+ 
+ 	constructor(
+-		@IStatusbarService private readonly statusbarService: IStatusbarService,
++		@IStatusbarService private readonly _statusbarService: IStatusbarService,
+ 		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+ 		@ILabelService private readonly labelService: ILabelService,
+ 		@IContextKeyService private contextKeyService: IContextKeyService,
+@@ -561,6 +561,7 @@ export class RemoteStatusIndicator exten
+ 	}
+ 
+ 	private renderRemoteStatusIndicator(initialText: string, initialTooltip?: string | MarkdownString, command?: string, showProgress?: boolean): void {
++		void this._statusbarService;
+ 		const { text, tooltip, ariaLabel } = this.withNetworkStatus(initialText, initialTooltip, showProgress);
+ 
+ 		const properties: IStatusbarEntry = {
+@@ -575,9 +576,10 @@ export class RemoteStatusIndicator exten
+ 
+ 		if (this.remoteStatusEntry) {
+ 			this.remoteStatusEntry.update(properties);
+-		} else {
+-			this.remoteStatusEntry = this.statusbarService.addEntry(properties, 'status.host', StatusbarAlignment.LEFT, Number.POSITIVE_INFINITY /* first entry */);
++			return;
+ 		}
++
++		// DroidLabX: never register status.host on this local WebView workbench.
+ 	}
+ 
+ 	private withNetworkStatus(initialText: string, initialTooltip?: string | MarkdownString, showProgress?: boolean): { text: string; tooltip: string | IMarkdownString | undefined; ariaLabel: string } {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/paneCompositePart.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/paneCompositePart.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/paneCompositePart.ts
+@@ -597,9 +597,24 @@ export abstract class AbstractPaneCompos
+ 	}
+ 
+ 	override layout(width: number, height: number, top: number, left: number): void {
+-		if (!this.layoutService.isVisible(this.partId)) {
++		const root = this.layoutService.mainContainer;
++		const compact = root.classList.contains('dlx-compact');
++		const drawer = compact && root.classList.contains('dlx-drawer-open');
++		const extensionsWindow = compact && root.classList.contains('dlx-extensions-window');
++		if (!this.layoutService.isVisible(this.partId) && !drawer && !extensionsWindow) {
+ 			return;
+ 		}
++		if (this.partId === Parts.SIDEBAR_PART && extensionsWindow) {
++			const bounds = root.getBoundingClientRect();
++			width = Math.max(width, Math.round(bounds.width));
++			height = Math.max(height, Math.round(bounds.height));
++			top = 0;
++			left = 0;
++		} else if (drawer && this.partId === Parts.SIDEBAR_PART) {
++			width = Math.max(width, 280);
++			top = 0;
++			left = 48;
++		}
+ 
+ 		// Remember the dimension as provided by the grid (before the floating inset is
+ 		// applied) so relayouts triggered by internal changes (title/header/footer) feed
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
+@@ -605,6 +605,11 @@ export class ActivityBarCompositeBar ext
+ 				width -= exit.clientWidth;
+ 			}
+ 		}
++		if (this.layoutService.mainContainer.classList.contains('dlx-compact')
++			&& this.layoutService.mainContainer.classList.contains('dlx-drawer-open')
++			&& this.options.orientation === ActionsOrientation.VERTICAL) {
++			height -= 56;
++		}
+ 		super.layout(width, height);
+ 	}
+ 
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/modalEditorPart.ts
+@@ -50,7 +50,6 @@ const MODAL_BORDER_WIDTH = 1; // 1px bor
+ const MODAL_BORDER_SIZE = MODAL_BORDER_WIDTH * 2;
+ const MODAL_HEADER_HEIGHT = 33; // Fallback only — actual height is measured from the rendered header element to account for the compact-header variant.
+ const MODAL_SNAP_THRESHOLD = 20;
+-const MODAL_MAXIMIZED_PADDING = 16;
+ const MODAL_SIDEBAR_MIN_WIDTH = 160;
+ const MODAL_SIDEBAR_DEFAULT_WIDTH = 260;
+ const MODAL_SIDEBAR_PADDING = 8; // matches CSS padding on sidebar container
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
+@@ -245,6 +245,15 @@
+ 	display: none;
+ }
+ 
+-.monaco-workbench.dlx-compact .monaco-modal-editor-block .dlx-overlay-close {
+-	display: flex;
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .title {
++	display: none !important;
++	height: 0 !important;
++	min-height: 0 !important;
++	overflow: hidden !important;
++	padding: 0 !important;
++	border: 0 !important;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .editor-container {
++	height: 100% !important;
+ }
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
+@@ -224,7 +224,6 @@ export class SettingsTargetsWidget exten
+ 	private workspaceSettings!: Action;
+ 	private folderSettingsAction!: Action;
+ 	private folderSettings!: FolderSettingsActionViewItem;
+-	private options: ISettingsTargetsWidgetOptions;
+ 
+ 	private _settingsTarget: SettingsTarget | null = null;
+ 
+@@ -233,7 +232,7 @@ export class SettingsTargetsWidget exten
+ 
+ 	constructor(
+ 		parent: HTMLElement,
+-		options: ISettingsTargetsWidgetOptions | undefined,
++		_options: ISettingsTargetsWidgetOptions | undefined,
+ 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+ 		@IInstantiationService private readonly instantiationService: IInstantiationService,
+ 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+@@ -241,7 +240,6 @@ export class SettingsTargetsWidget exten
+ 		@ILanguageService private readonly languageService: ILanguageService
+ 	) {
+ 		super();
+-		this.options = options ?? {};
+ 		this.create(parent);
+ 		this._register(this.contextService.onDidChangeWorkbenchState(() => this.onWorkbenchStateChanged()));
+ 		this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.update()));
+@@ -283,8 +281,6 @@ export class SettingsTargetsWidget exten
+ 
+ 		this.resetLabels();
+ 		this.update();
+-
+-		this.settingsSwitcherBar.push([this.userLocalSettings, this.userRemoteSettings, this.workspaceSettings, this.folderSettingsAction]);
+ 	}
+ 
+ 	get settingsTarget(): SettingsTarget | null {
+@@ -362,9 +358,10 @@ export class SettingsTargetsWidget exten
+ 
+ 	private async update(): Promise<void> {
+ 		this.settingsSwitcherBar.domNode.classList.toggle('empty-workbench', this.contextService.getWorkbenchState() === WorkbenchState.EMPTY);
+-		this.userRemoteSettings.enabled = !!(this.options.enableRemoteSettings && this.environmentService.remoteAuthority);
+-		this.workspaceSettings.enabled = this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY;
+-		this.folderSettings.action.enabled = this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE && this.contextService.getWorkspace().folders.length > 0;
++		this.userLocalSettings.enabled = false;
++		this.userRemoteSettings.enabled = false;
++		this.workspaceSettings.enabled = false;
++		this.folderSettings.action.enabled = false;
+ 
+ 		this.workspaceSettings.tooltip = localize('workspaceSettings', "Workspace");
+ 	}
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/part.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/part.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/part.ts
+@@ -234,7 +234,10 @@ class PartLayout {
+ 		// Title Size: Width (Fill), Height (Variable).
+ 		let titleSize: Dimension;
+ 		if (this.options.hasTitle) {
+-			const titleHeight = this.layoutService.isFloatingPanelsEnabled() ? PartLayout.AREA_HEIGHT_MODERN_UI : PartLayout.TITLE_HEIGHT;
++			const sidebar = !!this.contentArea?.closest('.part.sidebar');
++			const titleHeight = this.layoutService.isFloatingPanelsEnabled()
++				? PartLayout.AREA_HEIGHT_MODERN_UI
++				: sidebar ? 96 : PartLayout.TITLE_HEIGHT;
+ 			titleSize = new Dimension(width, Math.min(height, titleHeight));
+ 		} else {
+ 			titleSize = Dimension.None;
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/files/browser/views/explorerViewer.ts
+@@ -76,12 +76,29 @@ import { CountBadge } from '../../../../
+ import { listFilterMatchHighlight, listFilterMatchHighlightBorder } from '../../../../../platform/theme/common/colorRegistry.js';
+ import { asCssVariable } from '../../../../../platform/theme/common/colorUtils.js';
+ 
++export const DEFAULT_EXPLORER_ITEM_HEIGHT = 22;
++export const COMPACT_EXPLORER_ITEM_HEIGHT = 44;
++
++let explorerItemHeight = DEFAULT_EXPLORER_ITEM_HEIGHT;
++const _onDidChangeExplorerItemHeight = new Emitter<number>();
++export const onDidChangeExplorerItemHeight = _onDidChangeExplorerItemHeight.event;
++
++export function setExplorerItemHeight(height: number): void {
++	if (explorerItemHeight === height) {
++		return;
++	}
++	explorerItemHeight = height;
++	_onDidChangeExplorerItemHeight.fire(height);
++}
++
+ export class ExplorerDelegate implements IListVirtualDelegate<ExplorerItem> {
+ 
+-	static readonly ITEM_HEIGHT = 22;
++	static get ITEM_HEIGHT(): number {
++		return explorerItemHeight;
++	}
+ 
+-	getHeight(element: ExplorerItem): number {
+-		return ExplorerDelegate.ITEM_HEIGHT;
++	getHeight(_element: ExplorerItem): number {
++		return explorerItemHeight;
+ 	}
+ 
+ 	getTemplateId(element: ExplorerItem): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/sidebar/sidebarPart.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/sidebar/sidebarPart.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/sidebar/sidebarPart.ts
+@@ -184,7 +184,10 @@ export class SidebarPart extends Abstrac
+ 	}
+ 
+ 	override layout(width: number, height: number, top: number, left: number): void {
+-		if (!this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
++		const root = this.layoutService.mainContainer;
++		const overlay = root.classList.contains('dlx-compact')
++			&& (root.classList.contains('dlx-drawer-open') || root.classList.contains('dlx-extensions-window'));
++		if (!this.layoutService.isVisible(Parts.SIDEBAR_PART) && !overlay) {
+ 			return;
+ 		}
+ 
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/files/browser/views/explorerView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/files/browser/views/explorerView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/files/browser/views/explorerView.ts
+@@ -25,7 +25,7 @@ import { DelayedDragHandler } from '../.
+ import { IEditorService, SIDE_GROUP, ACTIVE_GROUP } from '../../../../services/editor/common/editorService.js';
+ import { IViewPaneOptions, ViewPane } from '../../../../browser/parts/views/viewPane.js';
+ import { ILabelService } from '../../../../../platform/label/common/label.js';
+-import { ExplorerDelegate, ExplorerDataSource, FilesRenderer, ICompressedNavigationController, FilesFilter, FileSorter, FileDragAndDrop, ExplorerCompressionDelegate, isCompressedFolderName, ExplorerFindProvider } from './explorerViewer.js';
++import { ExplorerDelegate, ExplorerDataSource, FilesRenderer, ICompressedNavigationController, FilesFilter, FileSorter, FileDragAndDrop, ExplorerCompressionDelegate, isCompressedFolderName, ExplorerFindProvider, onDidChangeExplorerItemHeight } from './explorerViewer.js';
+ import { IThemeService, IFileIconTheme } from '../../../../../platform/theme/common/themeService.js';
+ import { IWorkbenchThemeService } from '../../../../services/themes/common/workbenchThemeService.js';
+ import { ITreeContextMenuEvent, TreeVisibility } from '../../../../../base/browser/ui/tree/tree.js';
+@@ -577,11 +577,17 @@ export class ExplorerView extends ViewPa
+ 			findProvider: this.findProvider,
+ 		});
+ 		this._register(this.tree);
++		// 22px twisties need a wider step than the 8px default, or the guide sits on the next chevron.
++		this.tree.updateOptions({ indent: 20 });
++		this._register(onDidChangeExplorerItemHeight(height => this.applyExplorerItemHeight(height)));
+ 		this._register(this.themeService.onDidColorThemeChange(() => this.tree.rerender()));
+ 
+ 		// Bind configuration
+ 		const onDidChangeCompressionConfiguration = Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('explorer.compactFolders'));
+ 		this._register(onDidChangeCompressionConfiguration(_ => this.tree.updateOptions({ compressionEnabled: isCompressionEnabled() })));
++		this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('workbench.tree.indent'))(() => {
++			this.tree.updateOptions({ indent: 20 });
++		}));
+ 
+ 		// Update compression when screen reader mode changes
+ 		this._register(this.accessibilityService.onDidChangeScreenReaderOptimized(() => {
+@@ -656,6 +662,21 @@ export class ExplorerView extends ViewPa
+ 		}));
+ 	}
+ 
++	private applyExplorerItemHeight(height: number): void {
++		this.tree.updateOptions({ paddingBottom: height });
++		const visit = (item: ExplorerItem): void => {
++			if (this.tree.hasNode(item)) {
++				this.tree.updateElementHeight(item, height);
++			}
++			for (const child of item.children.values()) {
++				visit(child);
++			}
++		};
++		for (const root of this.explorerService.roots) {
++			visit(root);
++		}
++	}
++
+ 	// React on events
+ 
+ 	private onConfigurationUpdated(event: IConfigurationChangeEvent | undefined): void {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/search/browser/searchResultsView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/search/browser/searchResultsView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/search/browser/searchResultsView.ts
+@@ -78,7 +78,7 @@ interface IMatchTemplate {
+ 
+ export class SearchDelegate implements IListVirtualDelegate<RenderableMatch> {
+ 
+-	public static ITEM_HEIGHT = 22;
++	public static ITEM_HEIGHT = 44;
+ 
+ 	getHeight(element: RenderableMatch): number {
+ 		return SearchDelegate.ITEM_HEIGHT;
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/breakpointsView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/debug/browser/breakpointsView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/breakpointsView.ts
+@@ -591,7 +591,7 @@ class BreakpointsDelegate implements ILi
+ 	}
+ 
+ 	getHeight(_element: BreakpointTreeElement): number {
+-		return 22;
++		return 44;
+ 	}
+ 
+ 	getTemplateId(element: BreakpointTreeElement): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/callStackView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/debug/browser/callStackView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/callStackView.ts
+@@ -894,15 +894,8 @@ class ShowMoreRenderer implements ICompr
+ 
+ class CallStackDelegate implements IListVirtualDelegate<CallStackItem> {
+ 
+-	getHeight(element: CallStackItem): number {
+-		if (element instanceof StackFrame && element.presentationHint === 'label') {
+-			return 16;
+-		}
+-		if (element instanceof ThreadAndSessionIds || element instanceof Array) {
+-			return 16;
+-		}
+-
+-		return 22;
++	getHeight(_element: CallStackItem): number {
++		return 44;
+ 	}
+ 
+ 	getTemplateId(element: CallStackItem): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/loadedScriptsView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/debug/browser/loadedScriptsView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/loadedScriptsView.ts
+@@ -650,7 +650,7 @@ export class LoadedScriptsView extends V
+ class LoadedScriptsDelegate implements IListVirtualDelegate<LoadedScriptsItem> {
+ 
+ 	getHeight(element: LoadedScriptsItem): number {
+-		return 22;
++		return 44;
+ 	}
+ 
+ 	getTemplateId(element: LoadedScriptsItem): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/variablesView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/debug/browser/variablesView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/variablesView.ts
+@@ -368,7 +368,7 @@ interface IScopeTemplateData {
+ class VariablesDelegate implements IListVirtualDelegate<IExpression | IScope> {
+ 
+ 	getHeight(element: IExpression | IScope): number {
+-		return 22;
++		return 44;
+ 	}
+ 
+ 	getTemplateId(element: IExpression | IScope): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/watchExpressionsView.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/debug/browser/watchExpressionsView.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/debug/browser/watchExpressionsView.ts
+@@ -238,7 +238,7 @@ export class WatchExpressionsView extend
+ class WatchExpressionsDelegate implements IListVirtualDelegate<IExpression> {
+ 
+ 	getHeight(_element: IExpression): number {
+-		return 22;
++		return 44;
+ 	}
+ 
+ 	getTemplateId(element: IExpression): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/editorTabsControl.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/editorTabsControl.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/editorTabsControl.ts
+@@ -622,6 +622,11 @@ export abstract class EditorTabsControl
+ 	}
+ 
+ 	protected get tabHeight() {
++		if (this.parent.closest('.monaco-workbench.dlx-compact')) {
++			// 8px margin + 56px file pill + 8px margin. Must match the compact title height
++			// or the editor group scrolls and clips the drawer button.
++			return 72;
++		}
+ 		const isCompact = this.groupsView.partOptions.tabHeight === 'compact';
+ 		// In modern multi-tab mode the tabs-and-actions-container gains extra
+ 		// padding (tabs.css), so the total height differs from the base values.
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/singleEditorTabsControl.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/singleEditorTabsControl.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/singleEditorTabsControl.ts
+@@ -310,8 +310,12 @@ export class SingleEditorTabsControl ext
+ 
+ 			// Editor Label
+ 			const { labelFormat } = this.groupsView.partOptions;
++			const compact = !!this.parent.closest('.monaco-workbench.dlx-compact');
+ 			let description: string;
+-			if (this.breadcrumbsInHeader || this.breadcrumbsControl && !this.breadcrumbsControl.isHidden()) {
++			if (compact) {
++				// Directory only. The filename is already the title line.
++				description = editor.getDescription(Verbosity.LONG) || '';
++			} else if (this.breadcrumbsInHeader || this.breadcrumbsControl && !this.breadcrumbsControl.isHidden()) {
+ 				description = ''; // hide description when showing breadcrumbs
+ 			} else if (labelFormat === 'default' && !isGroupActive) {
+ 				description = ''; // hide description when group is not active and style is 'default'
+Index: droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/quickInputList.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/platform/quickinput/browser/quickInputList.ts
++++ droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/quickInputList.ts
+@@ -45,6 +45,7 @@ import { asCssVariable } from '../../the
+ import { IQuickPickItem, IQuickPickItemButtonEvent, IQuickPickSeparator, IQuickPickSeparatorButtonEvent, QuickPickFocus, QuickPickItem } from '../common/quickInput.js';
+ import { IQuickInputStyles } from './quickInput.js';
+ import { quickInputButtonsToActionArrays } from './quickInputUtils.js';
++import { DLX_QUICK_INPUT_DETAIL_HEIGHT, DLX_QUICK_INPUT_ROW_HEIGHT, DLX_QUICK_INPUT_SEPARATOR_HEIGHT } from './tree/quickInputDelegate.js';
+ 
+ const $ = dom.$;
+ 
+@@ -276,9 +277,9 @@ class QuickInputItemDelegate implements
+ 	getHeight(element: IQuickPickElement): number {
+ 
+ 		if (element instanceof QuickPickSeparatorElement) {
+-			return 30;
++			return DLX_QUICK_INPUT_SEPARATOR_HEIGHT;
+ 		}
+-		return element.saneDetail ? 44 : 22;
++		return element.saneDetail ? DLX_QUICK_INPUT_DETAIL_HEIGHT : DLX_QUICK_INPUT_ROW_HEIGHT;
+ 	}
+ 
+ 	getTemplateId(element: IQuickPickElement): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/tree/quickInputDelegate.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/platform/quickinput/browser/tree/quickInputDelegate.ts
++++ droidlabx-code-server/lib/vscode/src/vs/platform/quickinput/browser/tree/quickInputDelegate.ts
+@@ -7,12 +7,17 @@ import { IListVirtualDelegate } from '..
+ import { IQuickTreeItem } from '../../common/quickInput.js';
+ import { QuickInputTreeRenderer } from './quickInputTreeRenderer.js';
+ 
++/** 56px pill with 8px of air above and below, so a finger lands on one row. */
++export const DLX_QUICK_INPUT_ROW_HEIGHT = 72;
++export const DLX_QUICK_INPUT_DETAIL_HEIGHT = 94;
++export const DLX_QUICK_INPUT_SEPARATOR_HEIGHT = 44;
++
+ /**
+  * Delegate for QuickInputTree that provides height and template information.
+  */
+ export class QuickInputTreeDelegate<T extends IQuickTreeItem> implements IListVirtualDelegate<T> {
+ 	getHeight(_element: T): number {
+-		return 22;
++		return DLX_QUICK_INPUT_ROW_HEIGHT;
+ 	}
+ 
+ 	getTemplateId(_element: T): string {
+Index: droidlabx-code-server/lib/vscode/src/vs/base/browser/ui/selectBox/selectBoxCustom.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/base/browser/ui/selectBox/selectBoxCustom.ts
++++ droidlabx-code-server/lib/vscode/src/vs/base/browser/ui/selectBox/selectBoxCustom.ts
+@@ -30,7 +30,8 @@ import './selectBoxCustom.css';
+ const $ = dom.$;
+ 
+ const SELECT_OPTION_ENTRY_TEMPLATE_ID = 'selectOption.entry.template';
+-const SELECT_OPTION_HEIGHT = 22;
++/** Finger target. DroidLabX uses one row height on phone and tablet. */
++const SELECT_OPTION_HEIGHT = 44;
+ 
+ interface ISelectListTemplateData {
+ 	root: HTMLElement;
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/extensions/browser/extensionsList.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/extensions/browser/extensionsList.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/extensions/browser/extensionsList.ts
+@@ -25,8 +25,11 @@ import { IContextMenuService } from '../
+ import { HoverPosition } from '../../../../base/browser/ui/hover/hoverWidget.js';
+ import { IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
+ import { extensionVerifiedPublisherIconColor, verifiedPublisherIcon } from '../../../services/extensionManagement/common/extensionsIcons.js';
++import { mainWindow } from '../../../../base/browser/window.js';
+ 
++/** Upstream sidebar row. The phone extensions window is taller so the action fits beside the publisher. */
+ const EXTENSION_LIST_ELEMENT_HEIGHT = 72;
++const DLX_EXTENSIONS_WINDOW_ROW_HEIGHT = 104;
+ 
+ export interface ITemplateData {
+ 	root: HTMLElement;
+@@ -42,7 +45,11 @@ export interface ITemplateData {
+ }
+ 
+ export class Delegate implements IListVirtualDelegate<IExtension> {
+-	getHeight() { return EXTENSION_LIST_ELEMENT_HEIGHT; }
++	getHeight() {
++		return mainWindow.document.querySelector('.monaco-workbench.dlx-extensions-window')
++			? DLX_EXTENSIONS_WINDOW_ROW_HEIGHT
++			: EXTENSION_LIST_ELEMENT_HEIGHT;
++	}
+ 	getTemplateId() { return 'extension'; }
+ }
+ 
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/extensions/browser/extensionsViewlet.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/extensions/browser/extensionsViewlet.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/extensions/browser/extensionsViewlet.ts
+@@ -740,8 +740,32 @@ export class ExtensionsViewPaneContainer
+ 			this.root.classList.toggle('narrow', dimension.width <= 250);
+ 			this.root.classList.toggle('mini', dimension.width <= 200);
+ 		}
+-		this.searchBox?.layout(new Dimension(dimension.width - 34 - /*padding*/8 - (24 * 2), 20));
+-		const searchBoxHeight = 20 + 21 /*margin*/;
++		const searchControl = 44;
++		this.searchBox?.layout(new Dimension(Math.max(80, dimension.width - 16 - (searchControl * 2)), searchControl));
++		const searchBoxHeight = searchControl + 20;
++		const workbench = this.root?.closest('.monaco-workbench');
++		const chrome = this.header?.querySelector('.dlx-extensions-chrome') as HTMLElement | null;
++		if (workbench?.classList.contains('dlx-extensions-window') && chrome && this.header) {
++			const tab = workbench.getAttribute('data-dlx-extensions-tab') ?? 'installed';
++			const searchRow = this.header.querySelector('.extensions-search-container') as HTMLElement | null;
++			if (searchRow) {
++				searchRow.style.display = tab === 'search' ? '' : 'none';
++			}
++			const headerHeight = chrome.offsetHeight + (tab === 'search' ? searchBoxHeight : 0);
++			this.header.style.display = 'flex';
++			this.header.style.flexDirection = 'column';
++			this.header.style.height = `${headerHeight}px`;
++			super.layout(new Dimension(dimension.width, dimension.height - headerHeight));
++			return;
++		}
++		const searchRow = this.header?.querySelector('.extensions-search-container') as HTMLElement | null;
++		if (searchRow) {
++			searchRow.style.display = '';
++		}
++		if (this.header) {
++			this.header.style.display = '';
++			this.header.style.flexDirection = '';
++		}
+ 		const headerHeight = this.header && !!this.notificationContainer?.childNodes.length ? this.notificationContainer.clientHeight + searchBoxHeight + 10 /*margin*/ : searchBoxHeight;
+ 		this.header!.style.height = `${headerHeight}px`;
+ 		super.layout(new Dimension(dimension.width, dimension.height - headerHeight));

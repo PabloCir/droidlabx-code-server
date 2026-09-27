@@ -1,0 +1,307 @@
+DroidLabX workbench shell: phone vs tablet layout, strip unused chrome
+
+Phone (<768px): hide the activity rail and explorer behind a titlebar
+drawer (hamburger). The editor is the default surface; opening a file
+closes the drawer. Tablet/desktop keep the left rail as in stock VS Code.
+
+Product defaults disable Git/SCM, Copilot/chat, command center, accounts,
+ports/forwarding, and hide Outline/Timeline. CSS is a fallback for leftover
+chrome. Reproduce: open the workbench at 390px vs 1024px; e2e in
+test/e2e/droidlabxShell.test.ts.
+
+Index: droidlabx-code-server/lib/vscode/src/vs/server/node/webClientServer.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/server/node/webClientServer.ts
++++ droidlabx-code-server/lib/vscode/src/vs/server/node/webClientServer.ts
+@@ -451,7 +451,39 @@ export class WebClientServer {
+ 			folderUri: resolveWorkspaceURI(this._environmentService.args['default-folder']),
+ 			workspaceUri: resolveWorkspaceURI(this._environmentService.args['default-workspace']),
+ 			productConfiguration,
+-			callbackRoute: callbackRoute
++			callbackRoute: callbackRoute,
++			configurationDefaults: {
++				'git.enabled': false,
++				'git.decorations.enabled': false,
++				'git.autorefresh': false,
++				'scm.diffDecorations': 'none',
++				'chat.disableAIFeatures': true,
++				'chat.agent.enabled': false,
++				'chat.commandCenter.enabled': false,
++				'chat.mcp.enabled': false,
++				'window.commandCenter': false,
++				'workbench.commandCenter': false,
++				'workbench.layoutControl.enabled': false,
++				'workbench.secondarySideBar.defaultVisibility': 'hidden',
++				'security.workspace.trust.enabled': false,
++				'security.workspace.trust.startupPrompt': 'never',
++				'security.workspace.trust.banner': 'never',
++				'remote.autoForwardPorts': false,
++				'remote.restoreForwardedPorts': false,
++				'remote.forwardOnOpen': false,
++				'telemetry.telemetryLevel': 'off',
++				'update.mode': 'none',
++				'extensions.autoUpdate': false,
++				'extensions.autoCheckUpdates': false,
++				'editor.minimap.enabled': false,
++				'workbench.enableExperiments': false,
++				'workbench.settings.enableNaturalLanguageSearch': false,
++				'files.watcherExclude': {
++					'**/node_modules/**': true,
++					'**/.git/objects/**': true,
++					'**/.git/subtree-cache/**': true
++				}
++			}
+ 		};
+ 
+ 		const cookies = cookie.parse(req.headers.cookie || '');
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxShell.contribution.ts
+===================================================================
+--- /dev/null
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/droidlabxShell.contribution.ts
+@@ -0,0 +1,142 @@
++/*---------------------------------------------------------------------------------------------
++ *  Copyright (c) Microsoft Corporation. All rights reserved.
++ *  Licensed under the MIT License. See License.txt in the project root for license information.
++ *--------------------------------------------------------------------------------------------*/
++
++import './media/droidlabxShell.css';
++import { localize, localize2 } from '../../../../nls.js';
++import { Codicon } from '../../../../base/common/codicons.js';
++import { ThemeIcon } from '../../../../base/common/themables.js';
++import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
++import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
++import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
++import { ConfigurationTarget, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
++import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
++import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
++import { IWorkbenchLayoutService, Parts } from '../../../services/layout/browser/layoutService.js';
++import { IEditorService } from '../../../services/editor/common/editorService.js';
++
++/** Phone portrait / narrow webview. Tablet and desktop keep the side rail. */
++export const DLX_COMPACT_MAX_WIDTH = 768;
++
++export const DroidLabXCompactContext = new RawContextKey<boolean>('droidlabx.compact', false);
++
++const ACCOUNTS_VISIBILITY_KEY = 'workbench.activity.showAccounts';
++const TOGGLE_DRAWER_ID = 'droidlabx.toggleDrawer';
++
++function setDrawerHidden(layoutService: IWorkbenchLayoutService, hidden: boolean): void {
++	layoutService.setPartHidden(hidden, Parts.SIDEBAR_PART);
++	layoutService.setPartHidden(hidden, Parts.ACTIVITYBAR_PART);
++}
++
++export class DroidLabXShellContribution implements IWorkbenchContribution {
++
++	static readonly ID = 'workbench.contrib.droidlabxShell';
++
++	private readonly compactKey: IContextKey<boolean>;
++	private compact = false;
++	private applied = false;
++	private drawerButton: HTMLButtonElement | undefined;
++
++	constructor(
++		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
++		@IContextKeyService contextKeyService: IContextKeyService,
++		@IConfigurationService private readonly configurationService: IConfigurationService,
++		@IEditorService private readonly editorService: IEditorService,
++		@IStorageService storageService: IStorageService,
++	) {
++		this.compactKey = DroidLabXCompactContext.bindTo(contextKeyService);
++
++		if (storageService.get(ACCOUNTS_VISIBILITY_KEY, StorageScope.PROFILE) === undefined) {
++			storageService.store(ACCOUNTS_VISIBILITY_KEY, false, StorageScope.PROFILE, StorageTarget.MACHINE);
++		}
++
++		this.apply(this.layoutService.mainContainerDimension.width);
++		this.layoutService.onDidLayoutMainContainer(dimension => this.apply(dimension.width));
++		this.editorService.onDidActiveEditorChange(() => {
++			if (this.compact && this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
++				setDrawerHidden(this.layoutService, true);
++				this.syncDrawerButton();
++			}
++		});
++	}
++
++	private apply(width: number): void {
++		if (width < 200) {
++			return;
++		}
++		const compact = width < DLX_COMPACT_MAX_WIDTH;
++		if (!this.applied || compact !== this.compact) {
++			this.applied = true;
++			this.compact = compact;
++			this.compactKey.set(compact);
++			this.layoutService.mainContainer.classList.toggle('dlx-compact', compact);
++
++			if (compact) {
++				setDrawerHidden(this.layoutService, true);
++				this.layoutService.setPartHidden(true, Parts.PANEL_PART);
++				this.layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART);
++				void this.configurationService.updateValue('editor.minimap.enabled', false, ConfigurationTarget.MEMORY);
++				void this.configurationService.updateValue('editor.wordWrap', 'on', ConfigurationTarget.MEMORY);
++				void this.configurationService.updateValue('workbench.editor.showTabs', 'single', ConfigurationTarget.MEMORY);
++			} else {
++				void this.configurationService.updateValue('editor.minimap.enabled', undefined, ConfigurationTarget.MEMORY);
++				void this.configurationService.updateValue('editor.wordWrap', undefined, ConfigurationTarget.MEMORY);
++				void this.configurationService.updateValue('workbench.editor.showTabs', undefined, ConfigurationTarget.MEMORY);
++				setDrawerHidden(this.layoutService, false);
++			}
++		}
++
++		this.syncDrawerButton();
++	}
++
++	private syncDrawerButton(): void {
++		if (!this.compact) {
++			this.drawerButton?.remove();
++			this.drawerButton = undefined;
++			return;
++		}
++
++		if (!this.drawerButton) {
++			const button = document.createElement('button');
++			button.type = 'button';
++			button.className = 'dlx-drawer-toggle';
++			button.setAttribute('aria-label', localize('droidlabx.drawer', 'Menu'));
++			const icon = document.createElement('span');
++			icon.className = ThemeIcon.asClassName(Codicon.menu);
++			icon.setAttribute('aria-hidden', 'true');
++			button.appendChild(icon);
++			button.addEventListener('click', (e) => {
++				e.preventDefault();
++				e.stopPropagation();
++				setDrawerHidden(this.layoutService, this.layoutService.isVisible(Parts.SIDEBAR_PART));
++				this.syncDrawerButton();
++			});
++			this.drawerButton = button;
++		}
++
++		this.drawerButton.setAttribute('aria-expanded', String(this.layoutService.isVisible(Parts.SIDEBAR_PART)));
++		if (this.drawerButton.parentElement !== this.layoutService.mainContainer) {
++			this.layoutService.mainContainer.appendChild(this.drawerButton);
++		}
++	}
++}
++
++registerAction2(class extends Action2 {
++	constructor() {
++		super({
++			id: TOGGLE_DRAWER_ID,
++			title: localize2('droidlabx.toggleDrawer', 'Menu'),
++			icon: Codicon.menu,
++			f1: true,
++			precondition: DroidLabXCompactContext,
++		});
++	}
++
++	run(accessor: ServicesAccessor): void {
++		const layoutService = accessor.get(IWorkbenchLayoutService);
++		setDrawerHidden(layoutService, layoutService.isVisible(Parts.SIDEBAR_PART));
++	}
++});
++
++registerWorkbenchContribution2(DroidLabXShellContribution.ID, DroidLabXShellContribution, WorkbenchPhase.AfterRestored);
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
+===================================================================
+--- /dev/null
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
+@@ -0,0 +1,61 @@
++/* DroidLabX: hide chrome a simple phone IDE does not need. */
++
++.monaco-workbench .command-center,
++.monaco-workbench .command-center-center {
++	display: none !important;
++}
++
++.monaco-workbench .codicon-comment-discussion,
++.monaco-workbench .codicon-copilot,
++.monaco-workbench .codicon-account {
++	display: none !important;
++}
++
++.monaco-workbench .activitybar .action-item[aria-label*="Chat" i],
++.monaco-workbench .activitybar .action-item[aria-label*="Accounts" i],
++.monaco-workbench .activitybar .action-item[aria-label*="Source Control" i],
++.monaco-workbench .activitybar .action-item[aria-label*="Remote Explorer" i],
++.monaco-workbench .activitybar .action-item[aria-label*="Ports" i],
++.monaco-workbench .activitybar .codicon-source-control-view-icon,
++.monaco-workbench .activitybar .codicon-remote-explorer-view-icon {
++	display: none !important;
++}
++
++.monaco-workbench .composite-bar .action-item[aria-label*="Source Control" i],
++.monaco-workbench .composite-bar .action-item[aria-label*="Remote Explorer" i],
++.monaco-workbench .composite-bar .action-item[aria-label*="Chat" i],
++.monaco-workbench .composite-bar .action-item[aria-label*="Ports" i] {
++	display: none !important;
++}
++
++.monaco-workbench .statusbar-item[id*="git"],
++.monaco-workbench .statusbar-item[id*="scm"],
++.monaco-workbench .statusbar-item[id="status.scm"],
++.monaco-workbench .statusbar-item[id*="status.remote"],
++.monaco-workbench .statusbar-item[id="status.host"] {
++	display: none !important;
++}
++
++.monaco-workbench.dlx-compact .dlx-drawer-toggle {
++	position: absolute;
++	top: 4px;
++	left: 4px;
++	z-index: 3000;
++	display: flex;
++	align-items: center;
++	justify-content: center;
++	width: 44px;
++	height: 44px;
++	margin: 0;
++	padding: 0;
++	border: 0;
++	border-radius: 8px;
++	background: var(--vscode-titleBar-activeBackground, var(--vscode-editor-background));
++	color: var(--vscode-titleBar-activeForeground, var(--vscode-foreground));
++	box-shadow: 0 0 0 1px var(--vscode-widget-border, transparent);
++	cursor: pointer;
++}
++
++.monaco-workbench.dlx-compact .dlx-drawer-toggle .codicon {
++	font-size: 20px;
++}
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/outline/browser/outline.contribution.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/outline/browser/outline.contribution.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/outline/browser/outline.contribution.ts
+@@ -30,7 +30,7 @@ Registry.as<IViewsRegistry>(ViewExtensio
+ 	ctorDescriptor: new SyncDescriptor(OutlinePane),
+ 	canToggleVisibility: true,
+ 	canMoveView: true,
+-	hideByDefault: false,
++	hideByDefault: true,
+ 	collapsed: true,
+ 	order: 2,
+ 	weight: 30,
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/timeline/browser/timeline.contribution.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/timeline/browser/timeline.contribution.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/timeline/browser/timeline.contribution.ts
+@@ -34,7 +34,7 @@ export class TimelinePaneDescriptor impl
+ 	readonly weight = 30;
+ 	readonly collapsed = true;
+ 	readonly canToggleVisibility = true;
+-	readonly hideByDefault = false;
++	readonly hideByDefault = true;
+ 	readonly canMoveView = true;
+ 	readonly when = TimelineHasProviderContext;
+ 
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/workbench.web.main.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/workbench.web.main.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/workbench.web.main.ts
+@@ -189,4 +189,7 @@ import './contrib/processExplorer/browse
+ // Browser View
+ import './contrib/browserView/browser/browserView.contribution.js';
+ 
++// DroidLabX mobile/tablet shell
++import './contrib/droidlabx/browser/droidlabxShell.contribution.js';
++
+ //#endregion

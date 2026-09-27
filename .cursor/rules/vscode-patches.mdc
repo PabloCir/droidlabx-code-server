@@ -1,0 +1,29 @@
+---
+description: Quilt patches against the VS Code submodule
+globs: patches/**,lib/vscode/**
+alwaysApply: false
+---
+
+# VS Code patches
+
+`lib/vscode` is a git submodule. DroidLabX changes belong in `patches/` (see `patches/series`).
+
+```text
+quilt new {name}.diff          # or reuse an existing patch
+quilt add lib/vscode/path/file # MUST run before editing that file
+# edit the file
+quilt refresh                  # fold the diff into the patch
+```
+
+- Comment the patch: why it exists and how to see the behavior.
+- User-visible patch behavior gets an e2e under `test/e2e`.
+- Do not commit submodule dirty files as a substitute for a quilt patch.
+- Prefer deleting unused workbench chrome in the patch over hiding it from Android.
+
+```text
+# ❌ BAD
+edit lib/vscode/... then git add lib/vscode
+
+# ✅ GOOD
+quilt add lib/vscode/... && edit && quilt refresh
+```
