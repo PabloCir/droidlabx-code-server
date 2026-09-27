@@ -111,6 +111,8 @@ EOF
 
   VSCODE_QUALITY=stable npm run gulp compile-copilot-extension-full-build
 
+  # Only the web server bundle. See gulpfile core-ci.
+  export CODE_SERVER_BUNDLE=reh-web
   npm run gulp core-ci
   npm run gulp "vscode-reh-web-$VSCODE_TARGET${MINIFY:+-min}-ci"
 

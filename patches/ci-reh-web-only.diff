@@ -1,0 +1,23 @@
+Index: droidlabx-code-server/lib/vscode/build/gulpfile.vscode.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/build/gulpfile.vscode.ts
++++ droidlabx-code-server/lib/vscode/build/gulpfile.vscode.ts
+@@ -210,10 +210,15 @@ task.task(task.define('core-ci', task.se
+ 	task.define('tsgo-typecheck', () => spawnTsgo(path.join(root, 'src', 'tsconfig.json'), { taskName: 'tsgo-typecheck', noEmit: true })),
+ 	// Transpile individual files to out-build first (for unit tests)
+ 	task.define('esbuild-out-build', () => runEsbuildTranspile('out-build', false)),
+-	// Then bundle for shipping (bundles also write NLS files to out-build)
++	// Then bundle for shipping (bundles also write NLS files to out-build).
++	// code-server only packages reh-web. Building desktop and reh beside it
++	// on a 7GB Actions runner gets the step killed, and the leftover
++	// esbuild processes hang "Cleaning up orphan processes".
+ 	task.parallel(
+-		task.define('esbuild-vscode-min', () => runEsbuildBundle('out-vscode-min', true, true, 'desktop', `${sourceMappingURLBase}/core`)),
+-		task.define('esbuild-vscode-reh-min', () => runEsbuildBundle('out-vscode-reh-min', true, true, 'server', `${sourceMappingURLBase}/core`)),
++		...(process.env.CODE_SERVER_BUNDLE === 'reh-web' ? [] : [
++			task.define('esbuild-vscode-min', () => runEsbuildBundle('out-vscode-min', true, true, 'desktop', `${sourceMappingURLBase}/core`)),
++			task.define('esbuild-vscode-reh-min', () => runEsbuildBundle('out-vscode-reh-min', true, true, 'server', `${sourceMappingURLBase}/core`)),
++		]),
+ 		task.define('esbuild-vscode-reh-web-min', () => runEsbuildBundle('out-vscode-reh-web-min', true, true, 'server-web', `${sourceMappingURLBase}/core`)),
+ 	)
+ )));
