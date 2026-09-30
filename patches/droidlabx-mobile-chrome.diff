@@ -5,6 +5,10 @@ floating Menu, compact status, hidden menubar, Find bar full width,
 panel as a bottom sheet. Tablet: left rail, Find stays in the corner,
 panel stays docked. Both: 44px Find, menus, suggests, select rows,
 toasts; Chat and Source Control hidden by icon class.
+No welcome page: an empty editor shows one hint and no actions.
+On the phone a hairline arrow points at the menu button.
+A long-press menu stacks above the open drawer.
+The phone drawer hides the settings gear; tablet and desktop keep it.
 Extensions: on the phone, a full-screen window with Installed, Search, and Recommended.
 Tablet and desktop keep the sidebar viewlet. 44px search. Phone extension page stacks actions.
 
@@ -1272,7 +1276,7 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/brows
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
 +++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/browser/media/droidlabxShell.css
-@@ -1,61 +1,1534 @@
+@@ -1,61 +1,1628 @@
 -/* DroidLabX: hide chrome a simple phone IDE does not need. */
 +/* DroidLabX workbench chrome: phone overlay drawer, tablet rail, full-screen sheets. */
  
@@ -1546,6 +1550,12 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/brows
 +	box-shadow: 8px 0 24px rgba(0, 0, 0, 0.35);
 +}
 +
++/* Context menus use z-index 2575. The open drawer is 2600–3000, so a long-press menu paints underneath it. */
++.monaco-workbench.dlx-compact.dlx-drawer-open > .context-view,
++.monaco-workbench.dlx-compact.dlx-drawer-open > .shadow-root-host {
++	z-index: 4000 !important;
++}
++
 +.monaco-workbench.dlx-compact.dlx-extensions-window .split-view-view:has(> .part.sidebar),
 +.monaco-workbench.dlx-compact.dlx-extensions-window .split-view-view:has(> .part.activitybar) {
 +	display: block !important;
@@ -1691,6 +1701,11 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/brows
 +.monaco-workbench .activitybar .action-item {
 +	min-width: 44px;
 +	min-height: 44px;
++}
++
++/* Phone drawer has no settings gear. Tablet and desktop keep Manage on the rail. */
++.monaco-workbench.dlx-compact .activitybar .action-item:has(.codicon-settings-view-bar-icon) {
++	display: none !important;
 +}
 +
 +.monaco-workbench .part.statusbar {
@@ -2834,6 +2849,89 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/droidlabx/brows
 +	white-space: normal;
 +	line-height: 1.35;
 +	margin-top: 8px;
++}
++
++/* Empty editor: quiet type, no logo or shortcut list. On the phone a hairline arrow points at the menu button. */
++.monaco-workbench .editor-group-watermark .letterpress,
++.monaco-workbench .editor-group-watermark .shortcuts,
++.monaco-workbench .editor-group-watermark-toolbar-container {
++	display: none !important;
++}
++
++.monaco-workbench .editor-group-watermark {
++	max-width: none !important;
++}
++
++.monaco-workbench .dlx-empty-arrow {
++	display: none;
++	pointer-events: none;
++	color: var(--vscode-foreground);
++	opacity: 0.45;
++}
++
++.monaco-workbench:not(.dlx-compact) .dlx-empty-hint {
++	margin: 0;
++	max-width: 16rem;
++	padding: 0 24px;
++	font-size: 22px;
++	font-weight: 500;
++	letter-spacing: -0.02em;
++	line-height: 1.35;
++	text-align: center;
++	color: var(--vscode-foreground);
++	opacity: 0.86;
++}
++
++/* Title padding is 8px and the menu button is 44px, so its center is 30px from the group edge. */
++.monaco-workbench.dlx-compact .part.editor > .content .editor-group-container > .editor-group-watermark-wrapper > .editor-group-watermark {
++	width: 100%;
++	margin: 0;
++	align-items: flex-start;
++	justify-content: flex-start;
++}
++
++.monaco-workbench.dlx-compact .part.editor > .content .editor-group-container > .editor-group-watermark-wrapper > .editor-group-watermark > .watermark-container {
++	align-items: flex-start;
++	justify-content: flex-start;
++	height: auto;
++	/* Clears the floating menu button (top 14px, 44px tall) so the arrow tip sits just under it. */
++	padding: 62px 32px 0 8px;
++	box-sizing: border-box;
++}
++
++.monaco-workbench.dlx-compact .dlx-empty {
++	display: flex;
++	flex-direction: row;
++	align-items: flex-end;
++	gap: 12px;
++}
++
++.monaco-workbench.dlx-compact .dlx-empty-arrow {
++	display: block;
++	width: 44px;
++	height: 88px;
++	flex: 0 0 44px;
++}
++
++.monaco-workbench.dlx-compact .editor-group-container.max-height-478px .dlx-empty-arrow {
++	height: 48px;
++}
++
++.monaco-workbench.dlx-compact.dlx-drawer-open .dlx-empty-arrow {
++	visibility: hidden;
++}
++
++.monaco-workbench.dlx-compact .dlx-empty-hint {
++	margin: 0 0 4px;
++	padding: 0;
++	max-width: 11em;
++	font-size: 18px;
++	font-weight: 500;
++	letter-spacing: -0.015em;
++	line-height: 1.35;
++	text-align: left;
++	color: var(--vscode-foreground);
++	opacity: 0.9;
  }
 Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/media/settingsEditor2.css
 ===================================================================
@@ -3284,18 +3382,10 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/activityb
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
 +++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/activitybar/activitybarPart.ts
-@@ -597,6 +597,19 @@ export class ActivityBarCompositeBar ext
- 				width -= this.globalCompositeBar.element.clientWidth;
+@@ -605,6 +605,11 @@ export class ActivityBarCompositeBar ext
+ 				width -= exit.clientWidth;
  			}
  		}
-+		const exit = this.element?.querySelector('.dlx-exit');
-+		if (exit instanceof HTMLElement) {
-+			if (this.options.orientation === ActionsOrientation.VERTICAL) {
-+				height -= exit.clientHeight;
-+			} else {
-+				width -= exit.clientWidth;
-+			}
-+		}
 +		if (this.layoutService.mainContainer.classList.contains('dlx-compact')
 +			&& this.layoutService.mainContainer.classList.contains('dlx-drawer-open')
 +			&& this.options.orientation === ActionsOrientation.VERTICAL) {
@@ -3316,144 +3406,16 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/mo
  const MODAL_SIDEBAR_MIN_WIDTH = 160;
  const MODAL_SIDEBAR_DEFAULT_WIDTH = 260;
  const MODAL_SIDEBAR_PADDING = 8; // matches CSS padding on sidebar container
-@@ -662,18 +662,32 @@
- 		}));
- 
- 		// Compute default (non-custom, non-maximized) modal size
-+		const isCompact = () => this.layoutService.mainContainer.classList.contains('dlx-compact');
- 		const getDefaultSize = (): Dimension => {
- 			const containerDimension = this.layoutService.mainContainerDimension;
- 			const titleBarOffset = this.layoutService.mainContainerOffset.top;
- 			const availableHeight = Math.max(containerDimension.height - titleBarOffset, 0);
--			const targetWidth = containerDimension.width * 0.8;
--			const targetHeight = availableHeight * 0.8;
--			const width = Math.min(targetWidth, MODAL_MAX_DEFAULT_WIDTH, containerDimension.width);
--			const height = Math.min(targetHeight, MODAL_MAX_DEFAULT_HEIGHT, availableHeight);
-+			if (isCompact()) {
-+				return new Dimension(containerDimension.width, containerDimension.height);
-+			}
-+			const inset = 12;
-+			const width = Math.min(containerDimension.width - inset * 2, MODAL_MAX_DEFAULT_WIDTH, containerDimension.width);
-+			const height = Math.min(availableHeight - inset * 2, MODAL_MAX_DEFAULT_HEIGHT, availableHeight);
- 
--			return new Dimension(width, height);
-+			return new Dimension(Math.max(width, 0), Math.max(height, 0));
- 		};
- 
-+		const closeButton = append(actionBarContainer, $('button.dlx-overlay-close')) as HTMLButtonElement;
-+		closeButton.type = 'button';
-+		closeButton.setAttribute('aria-label', localize('closeModalEditor', "Close"));
-+		const closeIcon = append(closeButton, $('span'));
-+		closeIcon.className = ThemeIcon.asClassName(Codicon.close);
-+		closeIcon.setAttribute('aria-hidden', 'true');
-+		disposables.add(addDisposableListener(closeButton, EventType.CLICK, e => {
-+			EventHelper.stop(e, true);
-+			void editorPart.close();
-+		}));
-+
- 		// Layout the modal editor part
- 		let isFirstLayout = true;
- 		const layoutModal = () => {
-@@ -684,15 +698,20 @@
- 			const containerDimension = this.layoutService.mainContainerDimension;
- 			const titleBarOffset = this.layoutService.mainContainerOffset.top;
- 			const availableHeight = Math.max(containerDimension.height - titleBarOffset, 0);
-+			const compact = isCompact();
-+			modalElement.classList.toggle('dlx-sheet', compact);
- 
- 			const defaultSize = getDefaultSize();
- 
- 			let width: number;
- 			let height: number;
- 
--			if (editorPart.maximized) {
--				const verticalPadding = Math.max(titleBarOffset /* keep away from title bar to prevent clipping issues with WCO */, MODAL_MAXIMIZED_PADDING);
--				width = Math.max(containerDimension.width - MODAL_MAXIMIZED_PADDING, 0);
-+			if (compact) {
-+				width = containerDimension.width;
-+				height = containerDimension.height;
-+			} else if (editorPart.maximized) {
-+				const verticalPadding = Math.max(titleBarOffset /* keep away from title bar to prevent clipping issues with WCO */, 8);
-+				width = Math.max(containerDimension.width - 16, 0);
- 				height = Math.max(availableHeight - verticalPadding, 0);
- 			} else if (editorPart.size) {
- 				width = Math.min(editorPart.size.width, containerDimension.width);
-@@ -702,7 +721,9 @@
- 				height = defaultSize.height;
- 			}
- 
--			height = Math.min(height, availableHeight); // Ensure the modal never exceeds available height (below the title bar)
-+			if (!compact) {
-+				height = Math.min(height, availableHeight); // Ensure the modal never exceeds available height (below the title bar)
-+			}
- 
- 			// On first layout, clamp sidebar width if it would leave the editor too narrow
- 			if (isFirstLayout) {
-@@ -711,16 +732,19 @@
- 			}
- 
- 			// Update resizable element size and constraints
--			resizableElement.maxSize = new Dimension(containerDimension.width, availableHeight);
-+			resizableElement.maxSize = new Dimension(containerDimension.width, compact ? containerDimension.height : availableHeight);
- 			resizableElement.preferredSize = defaultSize;
- 			resizableElement.layout(height, width);
- 
- 			// Enable/disable sashes based on maximized state
--			const canResize = !editorPart.maximized;
-+			const canResize = !editorPart.maximized && !compact;
- 			resizableElement.enableSashes(canResize, canResize, canResize, canResize);
- 
- 			// Position: use custom position if available (clamped to bounds), otherwise center
--			if (!editorPart.maximized && editorPart.position) {
-+			if (compact) {
-+				resizableElement.domNode.style.left = '0px';
-+				resizableElement.domNode.style.top = '0px';
-+			} else if (!editorPart.maximized && editorPart.position) {
- 				const clampedLeft = Math.max(0, Math.min(editorPart.position.left, containerDimension.width - width));
- 				const clampedTop = Math.max(titleBarOffset, Math.min(editorPart.position.top, titleBarOffset + availableHeight - height));
- 				resizableElement.domNode.style.left = `${clampedLeft}px`;
 Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
 +++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
-@@ -211,3 +211,49 @@
- 	font-size: inherit;
- 	font-weight: var(--vscode-fontWeight-regular);
+@@ -245,6 +245,15 @@
+ 	display: none;
  }
-+
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block {
-+	background: var(--vscode-editor-background);
-+}
-+
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-shadow,
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part {
-+	border-radius: 0;
-+	box-shadow: none;
-+	border: 0;
-+}
-+
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-header {
-+	height: 44px;
-+	min-height: 44px;
-+	padding: 0 4px 0 12px;
-+}
-+
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-title .monaco-icon-label {
-+	height: 44px;
-+	line-height: 44px;
-+}
-+
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-action-separator,
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-editor-actions,
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-navigation,
-+.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-action-container > .monaco-toolbar {
-+	display: none !important;
-+}
-+
-+.monaco-workbench:not(.dlx-compact) .monaco-modal-editor-block .dlx-overlay-close {
-+	display: none;
-+}
-+
+ 
+-.monaco-workbench.dlx-compact .monaco-modal-editor-block .dlx-overlay-close {
+-	display: flex;
 +.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .title {
 +	display: none !important;
 +	height: 0 !important;
@@ -3465,7 +3427,7 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/me
 +
 +.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .editor-container {
 +	height: 100% !important;
-+}
+ }
 Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
@@ -3890,3 +3852,271 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/extensions/brow
  		const headerHeight = this.header && !!this.notificationContainer?.childNodes.length ? this.notificationContainer.clientHeight + searchBoxHeight + 10 /*margin*/ : searchBoxHeight;
  		this.header!.style.height = `${headerHeight}px`;
  		super.layout(new Dimension(dimension.width, dimension.height - headerHeight));
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/editorGroupWatermark.ts
+@@ -161,6 +161,14 @@ export class EditorGroupWatermark extend
+ 		clearNode(this.shortcuts);
+ 		this.transientDisposables.clear();
+ 
++		const host = this.shortcuts.parentElement;
++		if (host && !host.querySelector('.dlx-empty')) {
++			const empty = append(host, $('.dlx-empty'));
++			empty.appendChild(this.createEmptyArrow());
++			const hint = append(empty, $('p.dlx-empty-hint'));
++			hint.textContent = localize('droidlabx.emptyEditor', "Open a file to see its content");
++		}
++
+ 		if (!this.enabled) {
+ 			return;
+ 		}
+@@ -199,6 +207,29 @@ export class EditorGroupWatermark extend
+ 		this.transientDisposables.add(this.keybindingService.onDidUpdateKeybindings(update));
+ 	}
+ 
++	/** Hairline arrow. On the phone its tip sits under the menu button. */
++	private createEmptyArrow(): SVGElement {
++		const svgNs = 'http://www.w3.org/2000/svg';
++		const arrow = document.createElementNS(svgNs, 'svg');
++		arrow.setAttribute('class', 'dlx-empty-arrow');
++		arrow.setAttribute('viewBox', '0 0 44 88');
++		arrow.setAttribute('aria-hidden', 'true');
++
++		const shaft = document.createElementNS(svgNs, 'path');
++		shaft.setAttribute('d', 'M22 80 V18');
++		const head = document.createElementNS(svgNs, 'path');
++		head.setAttribute('d', 'M13 26 L22 12 L31 26');
++		for (const path of [shaft, head]) {
++			path.setAttribute('fill', 'none');
++			path.setAttribute('stroke', 'currentColor');
++			path.setAttribute('stroke-width', '1.5');
++			path.setAttribute('stroke-linecap', 'round');
++			path.setAttribute('stroke-linejoin', 'round');
++			arrow.appendChild(path);
++		}
++		return arrow;
++	}
++
+ 	private filterEntries(entries: WatermarkEntry[]): WatermarkEntry[] {
+ 		const filteredEntries = entries
+ 			.filter(entry => {
+Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/welcomeGettingStarted/browser/startupPage.ts
+===================================================================
+--- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/welcomeGettingStarted/browser/startupPage.ts
++++ droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/welcomeGettingStarted/browser/startupPage.ts
+@@ -3,34 +3,18 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
+-import { URI } from '../../../../base/common/uri.js';
+-import { ICommandService } from '../../../../platform/commands/common/commands.js';
+-import * as arrays from '../../../../base/common/arrays.js';
+ import { IWorkbenchContribution } from '../../../common/contributions.js';
+ import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+ import { IEditorService } from '../../../services/editor/common/editorService.js';
+ import { onUnexpectedError } from '../../../../base/common/errors.js';
+-import { IWorkspaceContextService, UNKNOWN_EMPTY_WINDOW_WORKSPACE, WorkbenchState } from '../../../../platform/workspace/common/workspace.js';
+ import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+-import { ILifecycleService, LifecyclePhase, StartupKind } from '../../../services/lifecycle/common/lifecycle.js';
++import { ILifecycleService, LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
+ import { Disposable, } from '../../../../base/common/lifecycle.js';
+-import { IFileService } from '../../../../platform/files/common/files.js';
+-import { joinPath } from '../../../../base/common/resources.js';
+-import { IWorkbenchLayoutService, Parts } from '../../../services/layout/browser/layoutService.js';
+-import { GettingStartedEditorOptions, GettingStartedInput, gettingStartedInputTypeId } from './gettingStartedInput.js';
++import { GettingStartedEditorOptions, GettingStartedInput } from './gettingStartedInput.js';
+ import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
+ import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+-import { getTelemetryLevel } from '../../../../platform/telemetry/common/telemetryUtils.js';
+-import { TelemetryLevel } from '../../../../platform/telemetry/common/telemetry.js';
+-import { IProductService } from '../../../../platform/product/common/productService.js';
+-import { INotificationService } from '../../../../platform/notification/common/notification.js';
+ import { localize } from '../../../../nls.js';
+ import { IEditorResolverService, RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
+-import { TerminalCommandId } from '../../terminal/common/terminal.js';
+-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+-import { AuxiliaryBarMaximizedContext } from '../../../common/contextkeys.js';
+-import { mainWindow } from '../../../../base/browser/window.js';
+-import { getActiveElement } from '../../../../base/browser/dom.js';
+ import { isWeb } from '../../../../base/common/platform.js';
+ import { IOnboardingService } from '../../welcomeOnboarding/common/onboardingService.js';
+ import { ONBOARDING_STORAGE_KEY } from '../../welcomeOnboarding/common/onboardingTypes.js';
+@@ -39,10 +23,6 @@ import { IChatEntitlementService } from
+ export const restoreWalkthroughsConfigurationKey = 'workbench.welcomePage.restorableWalkthroughs';
+ export type RestoreWalkthroughsConfigurationValue = { folder: string; category?: string; step?: string };
+ 
+-const configurationKey = 'workbench.startupEditor';
+-const oldConfigurationKey = 'workbench.welcome.enabled';
+-const telemetryOptOutStorageKey = 'workbench.telemetryOptOutShown';
+-
+ export class StartupPageEditorResolverContribution extends Disposable implements IWorkbenchContribution {
+ 
+ 	static readonly ID = 'workbench.contrib.startupPageEditorResolver';
+@@ -85,16 +65,9 @@ export class StartupPageRunnerContributi
+ 	constructor(
+ 		@IConfigurationService private readonly configurationService: IConfigurationService,
+ 		@IEditorService private readonly editorService: IEditorService,
+-		@IFileService private readonly fileService: IFileService,
+-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+ 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
+-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+-		@IProductService private readonly productService: IProductService,
+-		@ICommandService private readonly commandService: ICommandService,
+ 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+ 		@IStorageService private readonly storageService: IStorageService,
+-		@INotificationService private readonly notificationService: INotificationService,
+-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+ 		@IOnboardingService private readonly onboardingService: IOnboardingService,
+ 		@IChatEntitlementService private readonly chatEntitlementService: IChatEntitlementService,
+ 	) {
+@@ -115,122 +88,11 @@ export class StartupPageRunnerContributi
+ 		// Wait for resolving startup editor until we are restored to reduce startup pressure
+ 		await this.lifecycleService.when(LifecyclePhase.Restored);
+ 
+-		if (AuxiliaryBarMaximizedContext.getValue(this.contextKeyService)) {
+-			// If the auxiliary bar is maximized, we do not show the welcome page.
+-			return;
+-		}
+-
+-		// Always open Welcome page for first-launch, no matter what is open or which startupEditor is set.
+-		if (
+-			this.productService.enableTelemetry
+-			&& this.productService.showTelemetryOptOut
+-			&& getTelemetryLevel(this.configurationService) !== TelemetryLevel.NONE
+-			&& !this.environmentService.skipWelcome
+-			&& !this.storageService.get(telemetryOptOutStorageKey, StorageScope.PROFILE)
+-		) {
+-			this.storageService.store(telemetryOptOutStorageKey, true, StorageScope.PROFILE, StorageTarget.USER);
+-		}
+-
+-		if (this.tryOpenWalkthroughForFolder()) {
+-			return;
+-		}
+-
+-		const enabled = isStartupPageEnabled(this.configurationService, this.contextService, this.environmentService);
+-		if (enabled && this.lifecycleService.startupKind !== StartupKind.ReloadedWindow) {
+-
+-			// Open the welcome even if we opened a set of default editors
+-			if (!this.editorService.activeEditor || this.layoutService.openedDefaultEditors) {
+-				const startupEditorSetting = this.configurationService.inspect<string>(configurationKey);
+-
+-				if (startupEditorSetting.value === 'readme') {
+-					await this.openReadme();
+-				} else if (startupEditorSetting.value === 'welcomePage' || startupEditorSetting.value === 'welcomePageInEmptyWorkbench') {
+-					await this.openGettingStarted(true);
+-				} else if (startupEditorSetting.value === 'terminal') {
+-					this.commandService.executeCommand(TerminalCommandId.CreateTerminalEditor);
+-				}
+-			}
+-		}
+-	}
+-
+-	private tryOpenWalkthroughForFolder(): boolean {
+-		const toRestore = this.storageService.get(restoreWalkthroughsConfigurationKey, StorageScope.PROFILE);
+-		if (!toRestore) {
+-			return false;
++		// DroidLabX has no welcome page. Drop a restored one so the empty editor hint shows.
++		const welcome = this.editorService.findEditors(GettingStartedInput.RESOURCE);
++		if (welcome.length) {
++			await this.editorService.closeEditors(welcome);
+ 		}
+-		else {
+-			const restoreData: RestoreWalkthroughsConfigurationValue = JSON.parse(toRestore);
+-			const currentWorkspace = this.contextService.getWorkspace();
+-			if (restoreData.folder === UNKNOWN_EMPTY_WINDOW_WORKSPACE.id || restoreData.folder === currentWorkspace.folders[0].uri.toString()) {
+-				const options: GettingStartedEditorOptions = { selectedCategory: restoreData.category, selectedStep: restoreData.step, pinned: false, preserveFocus: this.shouldPreserveFocus() };
+-				this.editorService.openEditor({
+-					resource: GettingStartedInput.RESOURCE,
+-					options
+-				});
+-				this.storageService.remove(restoreWalkthroughsConfigurationKey, StorageScope.PROFILE);
+-				return true;
+-			}
+-		}
+-		return false;
+-	}
+-
+-	private async openReadme() {
+-		const readmes = arrays.coalesce(
+-			await Promise.all(this.contextService.getWorkspace().folders.map(
+-				async folder => {
+-					const folderUri = folder.uri;
+-					const folderStat = await this.fileService.resolve(folderUri).catch(onUnexpectedError);
+-					const files = folderStat?.children ? folderStat.children.map(child => child.name).sort() : [];
+-					const file = files.find(file => file.toLowerCase() === 'readme.md') || files.find(file => file.toLowerCase().startsWith('readme'));
+-					if (file) { return joinPath(folderUri, file); }
+-					else { return undefined; }
+-				})));
+-
+-		if (!this.editorService.activeEditor) {
+-			if (readmes.length) {
+-				const isMarkDown = (readme: URI) => readme.path.toLowerCase().endsWith('.md');
+-				await Promise.all([
+-					this.commandService.executeCommand('markdown.showPreview', null, readmes.filter(isMarkDown), { locked: true }).catch(error => {
+-						this.notificationService.error(localize('startupPage.markdownPreviewError', 'Could not open markdown preview: {0}.\n\nPlease make sure the markdown extension is enabled.', error.message));
+-					}),
+-					this.editorService.openEditors(readmes.filter(readme => !isMarkDown(readme)).map(readme => ({ resource: readme, options: { preserveFocus: this.shouldPreserveFocus() } }))),
+-				]);
+-			} else {
+-				// If no readme is found, default to showing the welcome page.
+-				await this.openGettingStarted();
+-			}
+-		}
+-	}
+-
+-	private async openGettingStarted(showTelemetryNotice?: boolean) {
+-		const startupEditorTypeID = gettingStartedInputTypeId;
+-		const editor = this.editorService.activeEditor;
+-
+-		// Ensure that the welcome editor won't get opened more than once
+-		if (editor?.typeId === startupEditorTypeID || this.editorService.editors.some(e => e.typeId === startupEditorTypeID)) {
+-			return;
+-		}
+-
+-		if (startupEditorTypeID === gettingStartedInputTypeId) {
+-			this.editorService.openEditor({
+-				resource: GettingStartedInput.RESOURCE,
+-				options: {
+-					index: editor ? 0 : undefined,
+-					pinned: false,
+-					preserveFocus: this.shouldPreserveFocus(),
+-					...{ showTelemetryNotice }
+-				},
+-			});
+-		}
+-	}
+-
+-	private shouldPreserveFocus(): boolean {
+-		const activeElement = getActiveElement();
+-		if (!activeElement || activeElement === mainWindow.document.body || this.layoutService.hasFocus(Parts.EDITOR_PART)) {
+-			return false; // steal focus if nothing meaningful is focused or editor area has focus
+-		}
+-
+-		return true; // do not steal focus
+ 	}
+ 
+ 	private tryShowOnboarding(): void {
+@@ -267,22 +129,3 @@ export class StartupPageRunnerContributi
+ 		}));
+ 	}
+ }
+-
+-function isStartupPageEnabled(configurationService: IConfigurationService, contextService: IWorkspaceContextService, environmentService: IWorkbenchEnvironmentService) {
+-	if (environmentService.skipWelcome) {
+-		return false;
+-	}
+-
+-	const startupEditor = configurationService.inspect<string>(configurationKey);
+-	if (!startupEditor.userValue && !startupEditor.workspaceValue) {
+-		const welcomeEnabled = configurationService.inspect(oldConfigurationKey);
+-		if (welcomeEnabled.value !== undefined && welcomeEnabled.value !== null) {
+-			return welcomeEnabled.value;
+-		}
+-	}
+-
+-	return startupEditor.value === 'welcomePage'
+-		|| startupEditor.value === 'readme'
+-		|| (contextService.getWorkbenchState() === WorkbenchState.EMPTY && startupEditor.value === 'welcomePageInEmptyWorkbench')
+-		|| startupEditor.value === 'terminal';
+-}

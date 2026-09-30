@@ -27,6 +27,7 @@ describe("droidlabx shell", ["--disable-workspace-trust"], {}, () => {
     await expect(page.locator(".dlx-exit")).toBeVisible()
     await expect(page.locator(".dlx-drawer-scrim")).toBeVisible()
     await expect(page.locator(".activitybar .action-item:has(.codicon-source-control-view-icon)")).toBeHidden()
+    await expect(page.locator(".activitybar .action-item:has(.codicon-settings-view-bar-icon)")).toBeHidden()
     const sidebar = await page.locator(".part.sidebar").boundingBox()
     expect(sidebar?.width ?? 0).toBeGreaterThan(180)
     expect(sidebar?.height ?? 0).toBeGreaterThan(300)
@@ -173,6 +174,7 @@ describe("droidlabx shell", ["--disable-workspace-trust"], {}, () => {
     await expect(page.locator(".part.activitybar")).toBeVisible()
     await expect(page.locator(".dlx-drawer-toggle")).toHaveCount(0)
     await expect(page.locator(".dlx-exit")).toBeVisible()
+    await expect(page.locator(".activitybar .action-item:has(.codicon-settings-view-bar-icon)")).toBeVisible()
     await expect(page.locator(".action-item[aria-label*='Accounts' i]")).toHaveCount(0)
   })
 
@@ -251,6 +253,58 @@ describe("droidlabx shell", ["--disable-workspace-trust"], {}, () => {
     await expect(page.locator(".monaco-workbench.dlx-compact")).toHaveCount(0)
     await expect(page.locator(".monaco-workbench.dlx-panel-open")).toHaveCount(0)
     await expect(page.locator(".part.panel")).toBeVisible()
+  })
+
+  test("empty editor shows a hint instead of the welcome page", async ({ codeServerPage }) => {
+    const page = codeServerPage.page
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.reload()
+    await codeServerPage.reloadUntilEditorIsReady()
+
+    await expect(page.locator(".gettingStartedContainer")).toHaveCount(0)
+    await expect(page.locator(".dlx-empty-hint")).toHaveText("Open a file to see its content")
+    await expect(page.locator(".editor-group-watermark .letterpress")).toBeHidden()
+    await expect(page.locator(".editor-group-watermark .shortcuts")).toBeHidden()
+    const arrow = page.locator(".dlx-empty-arrow")
+    await expect(arrow).toBeVisible()
+    const align = await page.evaluate(() => {
+      const button = document.querySelector(".dlx-drawer-toggle")!.getBoundingClientRect()
+      const mark = document.querySelector(".dlx-empty-arrow")!.getBoundingClientRect()
+      return {
+        dx: Math.abs(button.left + button.width / 2 - (mark.left + mark.width / 2)),
+        below: mark.top >= button.bottom - 4,
+      }
+    })
+    expect(align.dx).toBeLessThan(8)
+    expect(align.below).toBe(true)
+  })
+
+  test("file context menu stacks above the open drawer", async ({ codeServerPage }) => {
+    const page = codeServerPage.page
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.reload()
+    await codeServerPage.reloadUntilEditorIsReady()
+
+    await page.locator(".dlx-drawer-toggle").click()
+    await expect(page.locator(".monaco-workbench.dlx-drawer-open")).toBeVisible()
+    const row = page.locator(".explorer-folders-view .monaco-list-row").first()
+    await expect(row).toBeVisible()
+    await row.click({ button: "right" })
+    const menu = page.locator(".context-view .monaco-menu")
+    await expect(menu).toBeVisible()
+    const hit = await menu.evaluate((el) => {
+      const rect = el.getBoundingClientRect()
+      const top = document.elementFromPoint(rect.left + 8, rect.top + 8)
+      const view = el.closest(".context-view") as HTMLElement
+      const sidebar = document.querySelector(".part.sidebar") as HTMLElement
+      return {
+        menuZ: Number(getComputedStyle(view).zIndex),
+        sideZ: Number(getComputedStyle(sidebar).zIndex),
+        onMenu: !!top?.closest(".monaco-menu"),
+      }
+    })
+    expect(hit.menuZ).toBeGreaterThan(hit.sideZ)
+    expect(hit.onMenu).toBe(true)
   })
 
   test("extensions search is finger-sized on phone and tablet", async ({ codeServerPage }) => {
