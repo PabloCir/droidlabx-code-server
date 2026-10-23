@@ -3410,12 +3410,44 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/me
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
 +++ droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/media/modalEditorPart.css
-@@ -245,6 +245,15 @@
- 	display: none;
+@@ -211,3 +211,49 @@
+ 	font-size: inherit;
+ 	font-weight: var(--vscode-fontWeight-regular);
  }
- 
--.monaco-workbench.dlx-compact .monaco-modal-editor-block .dlx-overlay-close {
--	display: flex;
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block {
++	background: var(--vscode-editor-background);
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-shadow,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part {
++	border-radius: 0;
++	box-shadow: none;
++	border: 0;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-header {
++	height: 44px;
++	min-height: 44px;
++	padding: 0 4px 0 12px;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-title .monaco-icon-label {
++	height: 44px;
++	line-height: 44px;
++}
++
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-action-separator,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-editor-actions,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-navigation,
++.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-action-container > .monaco-toolbar {
++	display: none !important;
++}
++
++.monaco-workbench:not(.dlx-compact) .monaco-modal-editor-block .dlx-overlay-close {
++	display: none;
++}
++
 +.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .title {
 +	display: none !important;
 +	height: 0 !important;
@@ -3427,7 +3459,7 @@ Index: droidlabx-code-server/lib/vscode/src/vs/workbench/browser/parts/editor/me
 +
 +.monaco-workbench.dlx-compact .monaco-modal-editor-block .modal-editor-part .editor-group-container > .editor-container {
 +	height: 100% !important;
- }
++}
 Index: droidlabx-code-server/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
 ===================================================================
 --- droidlabx-code-server.orig/lib/vscode/src/vs/workbench/contrib/preferences/browser/preferencesWidgets.ts
